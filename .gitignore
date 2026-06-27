@@ -1,0 +1,7 @@
+# Ignore the build directory where compilation happens
+build/
+
+# Ignore system-specific or IDE files
+.vscode/
+.idea/
+*.swp
