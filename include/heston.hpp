@@ -1,6 +1,5 @@
-#include <cstddef>
+#include <cstddef> // size_t
 #pragma once
-
 
 struct HestonParameters {
     double S0;
