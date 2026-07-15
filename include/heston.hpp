@@ -1,4 +1,6 @@
 #include <cstddef> // size_t
+#include <utility> //pair
+#include <random> // mt19937
 #pragma once
 
 struct HestonParameters {
@@ -23,10 +25,13 @@ struct PricingResult {
 
 class HestonSimulator {
 public:
-    explicit HestonSimulator(const HestonParameters& params);
-    
-    PricingResult price_european_call(size_t num_paths, size_t num_steps, unsigned int seed);
+    explicit HestonSimulator(const HestonParameters& params, unsigned int seed);
 
+    PricingResult price_european_call(size_t num_paths, size_t num_steps);
+    
 private:
+    std::pair<double, double> generateCorrelatedNormal(double rho);
     HestonParameters params_;
+    std::mt19937 rng_;
+    std::normal_distribution<double> normal_;
 };

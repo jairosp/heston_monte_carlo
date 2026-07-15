@@ -4,15 +4,22 @@
 #include <algorithm>
 #include <chrono>
 
-HestonSimulator::HestonSimulator(const HestonParameters& params): params_(params) {}
+HestonSimulator::HestonSimulator(const HestonParameters& params, unsigned int seed): params_(params), rng_(seed), normal_(0.0, 1.0) {}
 
-PricingResult HestonSimulator::price_european_call(size_t num_paths, size_t num_steps, unsigned int seed){
-    std::mt19937 generator(seed);
-    std::normal_distribution<double> normal_dist(0.0, 1.0);
+// Generate two normal correlated distributions
+std::pair<double, double> HestonSimulator::generateCorrelatedNormal(double rho){
+    const double rho_comp = std::sqrt(1.0 - params_.rho * params_.rho);
+    double Z1 = normal_(rng_);
+    double Z2 = normal_(rng_);
 
+    double Z2_corr = rho * Z1 + rho_comp * Z2;
+    
+    return {Z1, Z2_corr};
+}
+
+PricingResult HestonSimulator::price_european_call(size_t num_paths, size_t num_steps){
     const double dt = params_.T / static_cast<double>(num_steps);
     const double sqrt_dt = std::sqrt(dt);
-    const double rho_comp = std::sqrt(1.0 - params_.rho * params_.rho);
 
     double sum_payoff = 0;
     double sum_squared_payoff = 0;
@@ -27,10 +34,7 @@ PricingResult HestonSimulator::price_european_call(size_t num_paths, size_t num_
         double v = params_.v0;
 
         for(size_t step = 0; step < num_steps; step++){
-            double Z1 = normal_dist(generator);
-            double Z2 = normal_dist(generator);
-
-            double Z2_corr = params_.rho * Z1 + rho_comp * Z2; //Cholesky
+            auto [Z1, Z2_corr] = generateCorrelatedNormal(params_.rho);
 
             const double v_truncated = std::max(v, 0.0);
             const double sqrt_v = std::sqrt(v_truncated);

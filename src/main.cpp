@@ -3,7 +3,7 @@
 #include <iostream>
 #include <format>
 
-unsigned int RANDOM_SEED = 42;
+constexpr unsigned int RNG_SEED = 42;
 
 void printResults(const PricingResult& results){
     std::cout << std::format("Call Price    :{:.4f}\n", results.price);
@@ -25,8 +25,8 @@ int main() {
         .rho = -0.5
     };
 
-    HestonSimulator pricingEngine(params);
-    PricingResult results = pricingEngine.price_european_call(1e5,1e4, RANDOM_SEED);
+    HestonSimulator pricingEngine(params, RNG_SEED);
+    PricingResult results = pricingEngine.price_european_call(1e4,1e3);
 
     printResults(results);
 

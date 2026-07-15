@@ -79,15 +79,15 @@ class HestonTest :
 
 TEST_P(HestonTest, Convergence)
 {
+    constexpr unsigned int RNG_SEED = 42;
     const TestCase& tc = GetParam();
 
-    HestonSimulator engine(tc.params);
+    HestonSimulator engine(tc.params, RNG_SEED);
 
     auto result =
         engine.price_european_call(
             10000,
-            100,
-            42
+            100
         );
 
     EXPECT_NEAR(
