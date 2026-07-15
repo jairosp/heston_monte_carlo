@@ -1,4 +1,4 @@
-# Heston Monte Carlo Pricing Engine (CUDA / C++20)
+# Heston Monte Carlo Pricing Engine (C++20/CUDA)
 
 ## Overview
 First serious finance project blending my C++ and CUDA knowledge to create something interesting. This project in particular will focus on pricing european call options.

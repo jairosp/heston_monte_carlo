@@ -52,3 +52,32 @@ Setup tests, create terminal UI and compare with real data.
 * Tweak CSV to label different tests
 * Different types of truncation (ability to tweak via parameters)
 * Ideally: Start configuring and learning about the QE-Scheme
+
+
+## 2026-07-15
+
+### Session Goal
+Finish tests, Truncation, QE Scheme and Function Modularity
+
+### Time Spent
+3 Hours
+
+### Completed
+* Created modular functions for random number generation (correlated normals)
+* Created modular functions for step function, which generalises the Method
+* Started digging into the QE Scheme
+* Added 10 tests for financial properties and reproducibility
+
+### Problems encountered
+* Test Fixtures, OOP Nuances in C++, Tweak structure in order to generalize  
+
+### Lessons learned
+* Modularity beats complexity
+* Testing is not actually that difficult
+* Log of price can be more precise than price (Fix Me!)
+* QE Scheme mathematical basis
+
+### Next Session
+* Implement QE Scheme step
+* Implement X = LOG(S) for increased precision (Ito's Lemma correction)
+* Check Bessel condition and implications
