@@ -7,7 +7,7 @@
 HestonSimulator::HestonSimulator(const HestonParameters& params, unsigned int seed): params_(params), rng_(seed), normal_(0.0, 1.0) {}
 
 // Generate two normal correlated distributions
-std::pair<double, double> HestonSimulator::generateCorrelatedNormal(double rho){
+CorrelatedNormals HestonSimulator::generateCorrelatedNormal(double rho){
     const double rho_comp = std::sqrt(1.0 - params_.rho * params_.rho);
     double Z1 = normal_(rng_);
     double Z2 = normal_(rng_);
@@ -34,13 +34,8 @@ PricingResult HestonSimulator::price_european_call(size_t num_paths, size_t num_
         double v = params_.v0;
 
         for(size_t step = 0; step < num_steps; step++){
-            auto [Z1, Z2_corr] = generateCorrelatedNormal(params_.rho);
-
-            const double v_truncated = std::max(v, 0.0);
-            const double sqrt_v = std::sqrt(v_truncated);
-
-            S += S * r_sqrt_dt + sqrt_v * S * sqrt_dt * Z1;
-            v += params_.kappa * (params_.theta - v_truncated) * dt + sqrt_v * xi_sqrt_dt * Z2_corr;
+            CorrelatedNormals normals = generateCorrelatedNormal(params_.rho);
+            eulerStep_(S, v, normals.z1, normals.z2, dt, sqrt_dt);
         }
         double payoff = std::max(S - params_.K, 0.0);
 
@@ -75,4 +70,13 @@ PricingResult HestonSimulator::price_european_call(size_t num_paths, size_t num_
     result.elapsed_seconds = std::chrono::duration<double>(end - start).count();
 
     return result;
+}
+
+// Euler-Maruyama with Full Truncation
+void HestonSimulator::eulerStep_(double &S, double &v, double z1, double z2, double dt, double sqrt_dt){
+    const double v_truncated = std::max(v, 0.0);
+    const double sqrt_v = std::sqrt(v_truncated);
+
+    S += params_.r * S * dt + sqrt_v * S * sqrt_dt * z1;
+    v += params_.kappa * (params_.theta - v_truncated) * dt + sqrt_v * params_.xi *sqrt_dt * z2;
 }

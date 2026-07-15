@@ -23,6 +23,19 @@ struct PricingResult {
     double elapsed_seconds;
 };
 
+// IMPLEMENT THIS LATER ON
+enum class VarianceScheme {
+    FullTruncation,
+    PartialTruncation,
+    Reflection,
+    Absortion
+};
+
+struct CorrelatedNormals {
+    double z1;
+    double z2;
+};
+
 class HestonSimulator {
 public:
     explicit HestonSimulator(const HestonParameters& params, unsigned int seed);
@@ -30,8 +43,12 @@ public:
     PricingResult price_european_call(size_t num_paths, size_t num_steps);
     
 private:
-    std::pair<double, double> generateCorrelatedNormal(double rho);
     HestonParameters params_;
+
+    // Euler-Maruyama with Full Truncation
+    void eulerStep_(double &S, double &v, double z1, double z2, double dt, double sqrt_dt);
+
     std::mt19937 rng_;
+    CorrelatedNormals generateCorrelatedNormal(double rho);
     std::normal_distribution<double> normal_;
 };
