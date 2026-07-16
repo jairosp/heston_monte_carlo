@@ -16,7 +16,7 @@ protected:
         .v0 = 0.04,
         .theta = 0.04,
         .kappa = 2.0,
-        .xi = 0.1,
+        .sigma = 0.1,
         .rho = -0.5
     };
 

@@ -26,13 +26,18 @@ PricingResult HestonSimulator::price_european_call(size_t num_paths, size_t num_
 
     auto start = std::chrono::steady_clock::now();
 
+    // FIX ME!
+    /* When Implementing DiscretizationScheme, put an if here
+    where you calculate sqrt_dt if EM, and K_i for QE (USE THE STRUCT QE COEFS) */
+
     for(size_t path = 0; path < num_paths; path++){
         double X = std::log(params_.S0); // Taking log is more precise
         double v = params_.v0;
 
         for(size_t step = 0; step < num_steps; step++){
-            CorrelatedNormals normals = generateCorrelatedNormal(params_.rho);
-            eulerStep_(X, v, normals.z1, normals.z2, dt, sqrt_dt);
+            
+            // eulerStep_(X, v, dt, sqrt_dt);
+            qeStep_(X, v, 0.5, 0.5, dt);
         }
         double payoff = std::max(std::exp(X) - params_.K, 0.0);
 
@@ -70,10 +75,73 @@ PricingResult HestonSimulator::price_european_call(size_t num_paths, size_t num_
 }
 
 // Euler-Maruyama with Full Truncation
-void HestonSimulator::eulerStep_(double &X, double &v, double z1, double z2, double dt, double sqrt_dt){
+void HestonSimulator::eulerStep_(double &X, double &v, double dt, double sqrt_dt){
+    CorrelatedNormals normals = generateCorrelatedNormal(params_.rho);
     const double v_truncated = std::max(v, 0.0);
     const double sqrt_v = std::sqrt(v_truncated);
     
-    X += (params_.r - 0.5 * v_truncated) * dt + sqrt_v * sqrt_dt * z1;
-    v += params_.kappa * (params_.theta - v_truncated) * dt + sqrt_v * params_.xi *sqrt_dt * z2;
+    X += (params_.r - 0.5 * v_truncated) * dt + sqrt_v * sqrt_dt * normals.z1;
+    v += params_.kappa * (params_.theta - v_truncated) * dt + sqrt_v * params_.sigma *sqrt_dt * normals.z2;
+}
+
+// Quadratic Exponential with Martingale Approach
+void HestonSimulator::qeStep_(double &X, double &v, double gamma1, double gamma2, double dt){
+    double v_prev = v;
+    
+    // THRESHOLD
+    const double PSI_C = 1.5; 
+
+    // DEFINE m and s squared
+    double exp_kdt = std::exp(-params_.kappa * dt);
+    double m = params_.theta + (v_prev - params_.theta) * exp_kdt;
+    double sigma2 = params_.sigma * params_.sigma;
+    double one_minus_exp = 1.0 - exp_kdt;
+
+    double s_sqr =
+        v_prev * sigma2 * exp_kdt * one_minus_exp / params_.kappa
+        +
+        params_.theta * sigma2 * one_minus_exp * one_minus_exp
+            / (2.0 * params_.kappa);
+    // DEFINE PSI
+    double psi = s_sqr / (m * m);
+    
+    if(psi <= PSI_C){
+        // QUADRATIC
+        double b2 =
+            2.0 / psi
+            - 1.0
+            + std::sqrt(2.0 / psi)
+                * std::sqrt(2.0 / psi - 1.0);
+
+        double b = std::sqrt(b2);
+        double a = m / (1 + b * b);
+        double Z = normal_(rng_); 
+
+        v = a * (b + Z) * (b + Z);
+    }else{
+        // EXPONENTIAL
+        double p = (psi - 1.0) / (psi + 1.0);
+        double beta = (1.0 - p) / m;
+        double U = uniform_(rng_);
+
+        if(U > p){
+            v = -(1 / beta) * std::log((1.0 - p) / (1.0 - U));
+        }else{
+            v = 0;
+        }
+    }
+
+    // UPDATE X_t
+    // Calculate K_i's
+    double K0 = - params_.kappa * params_.rho * params_.theta * dt / params_.sigma;
+    double K1 = (params_.kappa * params_.rho / params_.sigma - 0.5) * gamma1 * dt - params_.rho / params_.sigma;
+    double K2 = (params_.kappa * params_.rho / params_.sigma - 0.5) * gamma2 * dt + params_.rho / params_.sigma;
+    double K3 = (1 - params_.rho * params_.rho) * gamma1 * dt;
+    double K4 = (1 - params_.rho * params_.rho) * gamma2 * dt;
+
+    // INDEPENDENT N(0, 1)
+    double Z_x = normal_(rng_);
+
+    double variance_term = std::max(0.0, K3 * v_prev + K4 * v);
+    X += params_.r * dt + K0 + K1 * v_prev + K2 * v + std::sqrt(variance_term) * Z_x;
 }

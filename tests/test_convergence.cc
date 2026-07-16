@@ -56,7 +56,7 @@ std::vector<TestCase> load_test_cases(const std::string& filename){
         tc.params.kappa = std::stod(token);
 
         std::getline(ss, token, ',');
-        tc.params.xi = std::stod(token);
+        tc.params.sigma = std::stod(token);
 
         std::getline(ss, token, ',');
         tc.params.rho = std::stod(token);

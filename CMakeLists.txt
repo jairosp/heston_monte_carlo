@@ -3,6 +3,7 @@ project(HestonMonteCarlo LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Include the headers directory
 include_directories(include)
@@ -10,7 +11,8 @@ include_directories(include)
 include(FetchContent)
 FetchContent_Declare(
     googletest
-    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.17.0
 )
 
 # This line solved the bug of not recognising gtest

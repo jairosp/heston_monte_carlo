@@ -13,6 +13,18 @@ void printResults(const PricingResult& results){
 }
 
 int main() {    
+    // HestonParameters params = {
+    //     .S0 = 100.0,
+    //     .K = 100.0,
+    //     .r = 0.05,
+    //     .T = 1.0,
+    //     .v0 = 0.04,
+    //     .theta = 0.04,
+    //     .kappa = 2.0,
+    //     .sigma = 0.1,
+    //     .rho = -0.5
+    // };
+
     HestonParameters params = {
         .S0 = 100.0,
         .K = 100.0,
@@ -20,9 +32,9 @@ int main() {
         .T = 1.0,
         .v0 = 0.04,
         .theta = 0.04,
-        .kappa = 2.0,
-        .xi = 0.1,
-        .rho = -0.5
+        .kappa = 10.0,
+        .sigma = 0.01,
+        .rho = 0.0
     };
 
     HestonSimulator pricingEngine(params, RNG_SEED);

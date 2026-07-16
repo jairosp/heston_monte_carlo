@@ -1,6 +1,6 @@
 // Test reproductibility
-#include "heston.hpp"
 #include <gtest/gtest.h>
+#include "heston.hpp"
 
 class ReproducibilityTest : public ::testing::Test
 {
@@ -15,7 +15,7 @@ protected:
         .v0 = 0.04,
         .theta = 0.04,
         .kappa = 2.0,
-        .xi = 0.1,
+        .sigma = 0.1,
         .rho = -0.5
     };
 
