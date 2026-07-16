@@ -24,20 +24,17 @@ PricingResult HestonSimulator::price_european_call(size_t num_paths, size_t num_
     double sum_payoff = 0;
     double sum_squared_payoff = 0;
 
-    const double xi_sqrt_dt = params_.xi * sqrt_dt;
-    const double r_sqrt_dt = params_.r * dt;
-
     auto start = std::chrono::steady_clock::now();
 
     for(size_t path = 0; path < num_paths; path++){
-        double S = params_.S0;
+        double X = std::log(params_.S0); // Taking log is more precise
         double v = params_.v0;
 
         for(size_t step = 0; step < num_steps; step++){
             CorrelatedNormals normals = generateCorrelatedNormal(params_.rho);
-            eulerStep_(S, v, normals.z1, normals.z2, dt, sqrt_dt);
+            eulerStep_(X, v, normals.z1, normals.z2, dt, sqrt_dt);
         }
-        double payoff = std::max(S - params_.K, 0.0);
+        double payoff = std::max(std::exp(X) - params_.K, 0.0);
 
         sum_payoff += payoff;
         sum_squared_payoff += payoff * payoff;
@@ -73,10 +70,10 @@ PricingResult HestonSimulator::price_european_call(size_t num_paths, size_t num_
 }
 
 // Euler-Maruyama with Full Truncation
-void HestonSimulator::eulerStep_(double &S, double &v, double z1, double z2, double dt, double sqrt_dt){
+void HestonSimulator::eulerStep_(double &X, double &v, double z1, double z2, double dt, double sqrt_dt){
     const double v_truncated = std::max(v, 0.0);
     const double sqrt_v = std::sqrt(v_truncated);
-
-    S += params_.r * S * dt + sqrt_v * S * sqrt_dt * z1;
+    
+    X += (params_.r - 0.5 * v_truncated) * dt + sqrt_v * sqrt_dt * z1;
     v += params_.kappa * (params_.theta - v_truncated) * dt + sqrt_v * params_.xi *sqrt_dt * z2;
 }

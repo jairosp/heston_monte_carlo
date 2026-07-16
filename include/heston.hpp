@@ -46,7 +46,7 @@ private:
     HestonParameters params_;
 
     // Euler-Maruyama with Full Truncation
-    void eulerStep_(double &S, double &v, double z1, double z2, double dt, double sqrt_dt);
+    void eulerStep_(double &X, double &v, double z1, double z2, double dt, double sqrt_dt);
 
     std::mt19937 rng_;
     CorrelatedNormals generateCorrelatedNormal(double rho);
