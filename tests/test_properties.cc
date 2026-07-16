@@ -30,7 +30,8 @@ TEST_F(FinancialPropertiesTest, NonNegativePrice)
 
     auto result = engine.price_european_call(
         num_paths,
-        num_steps
+        num_steps,
+        DiscretizationScheme::QuadraticExponential
     );
 
     EXPECT_GE(result.price, 0.0);
@@ -42,7 +43,8 @@ TEST_F(FinancialPropertiesTest, PriceLessThanSpot)
 
     auto result = engine.price_european_call(
         num_paths,
-        num_steps
+        num_steps,
+        DiscretizationScheme::QuadraticExponential
     );
 
     EXPECT_LE(result.price, params.S0);
@@ -61,12 +63,14 @@ TEST_F(FinancialPropertiesTest, HigherSpotIncreasesPrice)
 
     auto result_low = sim_low.price_european_call(
         num_paths,
-        num_steps
+        num_steps,
+        DiscretizationScheme::QuadraticExponential
     );
 
     auto result_high = sim_high.price_european_call(
         num_paths,
-        num_steps
+        num_steps,
+        DiscretizationScheme::QuadraticExponential
     );
 
     EXPECT_LT(
@@ -88,12 +92,14 @@ TEST_F(FinancialPropertiesTest, HigherStrikeDecreasesPrice)
 
     auto result_low = sim_low.price_european_call(
         num_paths,
-        num_steps
+        num_steps,
+        DiscretizationScheme::QuadraticExponential
     );
 
     auto result_high = sim_high.price_european_call(
         num_paths,
-        num_steps
+        num_steps,
+        DiscretizationScheme::QuadraticExponential
     );
 
     EXPECT_GT(
@@ -108,7 +114,8 @@ TEST_F(FinancialPropertiesTest, ConfidenceIntervalContainsPrice)
 
     auto result = engine.price_european_call(
         num_paths,
-        num_steps
+        num_steps,
+        DiscretizationScheme::QuadraticExponential
     );
 
     EXPECT_LT(
@@ -128,7 +135,8 @@ TEST_F(FinancialPropertiesTest, PriceAboveNoArbitrageLowerBound)
 
     auto result = engine.price_european_call(
         num_paths,
-        num_steps
+        num_steps,
+        DiscretizationScheme::QuadraticExponential
     );
 
     const double lower_bound =

@@ -27,8 +27,8 @@ TEST_F(ReproducibilityTest, SameSeedSameResult){
     HestonSimulator engine1(params, seed);
     HestonSimulator engine2(params, seed);
 
-    PricingResult results1 = engine1.price_european_call(num_paths, num_steps); 
-    PricingResult results2 = engine2.price_european_call(num_paths, num_steps); 
+    PricingResult results1 = engine1.price_european_call(num_paths, num_steps, DiscretizationScheme::QuadraticExponential); 
+    PricingResult results2 = engine2.price_european_call(num_paths, num_steps, DiscretizationScheme::QuadraticExponential); 
 
     EXPECT_DOUBLE_EQ(results1.price, results2.price);
 }
@@ -40,8 +40,8 @@ TEST_F(ReproducibilityTest, DiffSeedDiffResult){
     HestonSimulator engine1(params, seed1);
     HestonSimulator engine2(params, seed2);
 
-    PricingResult results1 = engine1.price_european_call(num_paths, num_steps); 
-    PricingResult results2 = engine2.price_european_call(num_paths, num_steps); 
+    PricingResult results1 = engine1.price_european_call(num_paths, num_steps, DiscretizationScheme::QuadraticExponential); 
+    PricingResult results2 = engine2.price_european_call(num_paths, num_steps, DiscretizationScheme::QuadraticExponential); 
 
     EXPECT_GT(abs(results1.price - results2.price), 1e-8);
 }
@@ -50,8 +50,8 @@ TEST_F(ReproducibilityTest, StandardErrorDecreasesWithMorePaths){
     HestonSimulator engine1(params, seed);
     HestonSimulator engine2(params, seed);
 
-    auto result_small = engine1.price_european_call(10000, num_steps);
-    auto result_large = engine2.price_european_call(100000, num_steps);
+    auto result_small = engine1.price_european_call(10000, num_steps, DiscretizationScheme::QuadraticExponential);
+    auto result_large = engine2.price_european_call(100000, num_steps, DiscretizationScheme::QuadraticExponential);
 
     EXPECT_LT(result_large.std_error, result_small.std_error);
 }

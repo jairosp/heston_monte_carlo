@@ -87,7 +87,8 @@ TEST_P(HestonTest, Convergence)
     auto result =
         engine.price_european_call(
             10000,
-            100
+            100,
+            DiscretizationScheme::QuadraticExponential
         );
 
     EXPECT_NEAR(

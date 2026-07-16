@@ -36,6 +36,11 @@ struct CorrelatedNormals {
     double z2;
 };
 
+enum class DiscretizationScheme {
+    EulerMaruyama,
+    QuadraticExponential
+};
+
 struct QECoefficients {
     double K0;
     double K1;
@@ -48,14 +53,14 @@ class HestonSimulator {
 public:
     explicit HestonSimulator(const HestonParameters& params, unsigned int seed);
 
-    PricingResult price_european_call(size_t num_paths, size_t num_steps);
+    PricingResult price_european_call(size_t num_paths, size_t num_steps, DiscretizationScheme disc_scheme);
     
 private:
     HestonParameters params_;
 
     // Euler-Maruyama with Full Truncation
     void eulerStep_(double &X, double &v, double dt, double sqrt_dt);
-    void qeStep_(double &X, double &v, double gamma1, double gamma2, double dt);
+    void qeStep_(double &X, double &v, QECoefficients coefs, double dt);
 
     std::mt19937 rng_;
     CorrelatedNormals generateCorrelatedNormal(double rho);
