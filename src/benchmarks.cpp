@@ -4,14 +4,6 @@
 
 constexpr unsigned int RNG_SEED = 123;
 
-void printResults(const PricingResult &results) {
-    std::cout << std::format("Call Price    :{:.4f}\n", results.price);
-    std::cout << std::format("Std error     :{:.4f}\n", results.std_error);
-    std::cout << std::format("95% CI        :[{:.4f}, {:.4f}]\n", results.ci_lower,
-                             results.ci_upper);
-    std::cout << std::format("Exec Time     :{:.4f}\n", results.elapsed_seconds);
-}
-
 int main() {
     HestonParameters params = {.S0 = 100.0,
                                .K = 100.0,
@@ -23,11 +15,15 @@ int main() {
                                .sigma = 0.1,
                                .rho = -0.5};
 
+    // std::vector<int> num_steps = {1'000, 5'000, 10'000, 50'000, 100'000, 500'000, 1'000'000};
+
+    // struct BenchmarkResult {
+    //     double
+    // };
+
     HestonSimulator pricingEngine(params, RNG_SEED);
     PricingResult results =
         pricingEngine.price_european_call(1e4, 1e3, DiscretizationScheme::QuadraticExponential);
-
-    printResults(results);
 
     return 0;
 }

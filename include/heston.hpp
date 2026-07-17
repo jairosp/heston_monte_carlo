@@ -1,6 +1,6 @@
 #include <cstddef> // size_t
+#include <random>  // mt19937
 #include <utility> //pair
-#include <random> // mt19937
 #pragma once
 
 struct HestonParameters {
@@ -24,22 +24,14 @@ struct PricingResult {
 };
 
 // IMPLEMENT THIS LATER ON
-enum class VarianceScheme {
-    FullTruncation,
-    PartialTruncation,
-    Reflection,
-    Absortion
-};
+enum class VarianceScheme { FullTruncation, PartialTruncation, Reflection, Absortion };
 
 struct CorrelatedNormals {
     double z1;
     double z2;
 };
 
-enum class DiscretizationScheme {
-    EulerMaruyama,
-    QuadraticExponential
-};
+enum class DiscretizationScheme { EulerMaruyama, QuadraticExponential };
 
 struct QECoefficients {
     double K0;
@@ -50,12 +42,13 @@ struct QECoefficients {
 };
 
 class HestonSimulator {
-public:
-    explicit HestonSimulator(const HestonParameters& params, unsigned int seed);
+  public:
+    explicit HestonSimulator(const HestonParameters &params, unsigned int seed);
 
-    PricingResult price_european_call(size_t num_paths, size_t num_steps, DiscretizationScheme disc_scheme);
-    
-private:
+    PricingResult price_european_call(size_t num_paths, size_t num_steps,
+                                      DiscretizationScheme disc_scheme);
+
+  private:
     HestonParameters params_;
 
     // Euler-Maruyama with Full Truncation

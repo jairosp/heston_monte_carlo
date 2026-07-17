@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
 #include "heston.hpp"
+#include <gtest/gtest.h>
 
-// Process CSV 
+// Process CSV
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -9,27 +9,27 @@
 // PRINT TO FUNCTION
 #include <ostream>
 
-struct TestCase{
+struct TestCase {
     double name;
     HestonParameters params;
     double expected_price;
 };
 
 // EXTRACT DATA FROM CSV
-std::vector<TestCase> load_test_cases(const std::string& filename){
+std::vector<TestCase> load_test_cases(const std::string &filename) {
     std::vector<TestCase> cases;
 
     std::ifstream file(filename);
 
-    if(!file)
+    if (!file)
         throw std::runtime_error("Cannot open file: " + filename);
-    
+
     std::string line;
-    
+
     // SKIP HEADERS
     std::getline(file, line);
 
-    while(std::getline(file, line)){
+    while (std::getline(file, line)) {
         std::stringstream ss(line);
         std::string token;
         TestCase tc;
@@ -73,44 +73,25 @@ std::vector<TestCase> load_test_cases(const std::string& filename){
 // LOAD DATA
 std::vector<TestCase> all_cases = load_test_cases("../tests/tests_data.csv");
 
-class HestonTest :
-    public ::testing::TestWithParam<TestCase>{};
+class HestonTest : public ::testing::TestWithParam<TestCase> {};
 
-
-TEST_P(HestonTest, Convergence)
-{
+TEST_P(HestonTest, Convergence) {
     constexpr unsigned int RNG_SEED = 42;
-    const TestCase& tc = GetParam();
+    const TestCase &tc = GetParam();
 
     HestonSimulator engine(tc.params, RNG_SEED);
 
     auto result =
-        engine.price_european_call(
-            10000,
-            100,
-            DiscretizationScheme::QuadraticExponential
-        );
+        engine.price_european_call(10000, 100, DiscretizationScheme::QuadraticExponential);
 
-    EXPECT_NEAR(
-        result.price,
-        tc.expected_price,
-        3.0 * result.std_error
-    );
+    EXPECT_NEAR(result.price, tc.expected_price, 3.0 * result.std_error);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    CSVCases,
-    HestonTest,
-    ::testing::ValuesIn(all_cases),
-    [](const ::testing::TestParamInfo<TestCase>& info)
-    {
-        return std::string("Case") + std::to_string(info.index);
-    }
-);
+INSTANTIATE_TEST_SUITE_P(CSVCases, HestonTest, ::testing::ValuesIn(all_cases),
+                         [](const ::testing::TestParamInfo<TestCase> &test_info) {
+                             return std::string("Case") + std::to_string(test_info.index);
+                         });
 
-void PrintTo(const TestCase& tc, std::ostream* os)
-{
-    *os << "S0=" << tc.params.S0
-        << ", K=" << tc.params.K
-        << ", expected=" << tc.expected_price;
+void PrintTo(const TestCase &tc, std::ostream *os) {
+    *os << "S0=" << tc.params.S0 << ", K=" << tc.params.K << ", expected=" << tc.expected_price;
 }
