@@ -17,7 +17,7 @@ class FinancialPropertiesTest : public ::testing::Test {
                             .rho = -0.5};
 
     static constexpr size_t num_paths = 100000;
-    static constexpr size_t num_steps = 1000;
+    static constexpr size_t num_steps = 365;
 };
 
 TEST_F(FinancialPropertiesTest, NonNegativePrice) {

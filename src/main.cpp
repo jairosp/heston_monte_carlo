@@ -25,7 +25,7 @@ int main() {
 
     HestonSimulator pricingEngine(params, RNG_SEED);
     PricingResult results =
-        pricingEngine.price_european_call(1e4, 1e3, DiscretizationScheme::QuadraticExponential);
+        pricingEngine.price_european_call(1e4, 365, DiscretizationScheme::QuadraticExponential);
 
     printResults(results);
 

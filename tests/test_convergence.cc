@@ -82,7 +82,7 @@ TEST_P(HestonTest, Convergence) {
     HestonSimulator engine(tc.params, RNG_SEED);
 
     auto result =
-        engine.price_european_call(10000, 100, DiscretizationScheme::QuadraticExponential);
+        engine.price_european_call(10000, 365, DiscretizationScheme::QuadraticExponential);
 
     EXPECT_NEAR(result.price, tc.expected_price, 3.0 * result.std_error);
 }
