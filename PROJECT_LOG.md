@@ -102,3 +102,31 @@ Implement the QE Step and generalization
 * Check the math first
 
 ### Next Session
+* Creating Benchmarks for comparing QE and Euler with Python
+
+## 2026-07-17
+
+### Session Goal
+Implement benchmarking with python graphs
+
+### Time Spent
+4 Hours
+
+### Completed
+* Python professional benchmarking
+* Code Formatting (LLVM style)
+
+### Problems encountered
+* Creating a Python Venv with CMake
+* CMake in general (I need to review this)
+* Relative and absolute paths for execution
+
+### Lessons learned
+* Understanding CMake deeply can save lots of time
+
+### Next Session
+* Deeply Understand GTest (Read Docs, watch some tutorials)
+* General Tweaks, clean code, write weekly report
+* Review the codebase and progress, internalize the structure
+
+
