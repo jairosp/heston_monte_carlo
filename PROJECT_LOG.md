@@ -81,3 +81,24 @@ Finish tests, Truncation, QE Scheme and Function Modularity
 * Implement QE Scheme step
 * Implement X = LOG(S) for increased precision (Ito's Lemma correction)
 * Check Bessel condition and implications
+
+## 2026-07-16
+
+### Session Goal
+Implement the QE Step and generalization
+
+### Time Spent
+5 Hours
+
+### Completed
+* QE Method Full Understanding, implementation and robustness (zero division errors)
+* X_t = LOG(S_t) modification for efficiency
+* Generalisation for methods
+
+### Problems encountered
+* QE Understanding 
+
+### Lessons learned
+* Check the math first
+
+### Next Session
