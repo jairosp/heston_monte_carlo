@@ -14,18 +14,20 @@ struct BenchmarkResult {
 };
 
 int main() {
+    /* These parameters exploit the advantages of the QE method */
     HestonParameters params = {.S0 = 100.0,
                                .K = 100.0,
                                .r = 0.05,
                                .T = 1.0,
                                .v0 = 0.04,
                                .theta = 0.04,
-                               .kappa = 2.0,
-                               .sigma = 0.1,
-                               .rho = -0.5};
+                               .kappa = 1.0,
+                               .sigma = 0.8,
+                               .rho = -0.9};
+    /* THE EXPECTED PRICE FOR THESE PARAMATERS IS 9.159321 */
 
-    std::vector<int> num_paths = {1'000, 10'000, 100'000, 1'000'000};
-    const int NUM_STEPS = 365;
+    const int NUM_STEPS = 12; // EXPLOIT QE EVEN MORE
+    std::vector<int> num_paths = {1'000, 10'000, 100'000, 1'000'000, 10'000'000};
     std::vector<BenchmarkResult> results;
 
     HestonSimulator pricingEngine(params, RNG_SEED);
