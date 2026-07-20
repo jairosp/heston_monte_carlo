@@ -5,7 +5,11 @@ First serious finance project blending my C++ and CUDA knowledge to create somet
 
 ![Benchmark](benchmarks/reports/price_vs_paths.png)
 
-We can see how the QE approach price differs from the EM approach. 
+We can see how the QE approach price differs from the EM approach. Also we can see how the std error diminishes: 
+
+![Benchmark](benchmarks/reports/stderr_vs_paths.png)
+
+Both approaches seem to deliver a similar std error across different number of paths.
 
 ## Goals
 Create and measure a robust pricing engine parallelizing with CUDA. Taking advantage of the Monte Carlo simulation.
