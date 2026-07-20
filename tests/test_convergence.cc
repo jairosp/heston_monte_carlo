@@ -1,66 +1,64 @@
-#include "heston.hpp"
-#include <gtest/gtest.h>
-
-// Process CSV
 #include <fstream>
+#include <gtest/gtest.h>
+#include <memory>
+#include <ostream>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
-// PRINT TO FUNCTION
-#include <ostream>
+// New architecture headers
+#include "core/pricer_interface.hpp"
+#include "core/types.hpp"
+#include "cpu/cpu_heston_pricer.hpp"
 
 struct TestCase {
-    double name;
     HestonParameters params;
     double expected_price;
 };
 
-// EXTRACT DATA FROM CSV
-std::vector<TestCase> load_test_cases(const std::string &filename) {
+// Read CSV and so on
+inline std::vector<TestCase> load_test_cases(const std::string &filename) {
     std::vector<TestCase> cases;
-
     std::ifstream file(filename);
 
-    if (!file)
-        throw std::runtime_error("Cannot open file: " + filename);
+    if (!file) {
+        file.open("../" + filename);
+        if (!file) {
+            throw std::runtime_error("Could not open the file: " + filename);
+        }
+    }
 
     std::string line;
-
-    // SKIP HEADERS
+    // Skip headers
     std::getline(file, line);
 
     while (std::getline(file, line)) {
+        if (line.empty())
+            continue;
+
         std::stringstream ss(line);
         std::string token;
-        TestCase tc;
+        TestCase tc{};
 
         std::getline(ss, token, ',');
         tc.params.S0 = std::stod(token);
-
         std::getline(ss, token, ',');
         tc.params.K = std::stod(token);
-
         std::getline(ss, token, ',');
         tc.params.r = std::stod(token);
-
         std::getline(ss, token, ',');
         tc.params.T = std::stod(token);
-
         std::getline(ss, token, ',');
         tc.params.v0 = std::stod(token);
-
         std::getline(ss, token, ',');
         tc.params.theta = std::stod(token);
-
         std::getline(ss, token, ',');
         tc.params.kappa = std::stod(token);
-
         std::getline(ss, token, ',');
-        tc.params.sigma = std::stod(token);
-
+        tc.params.xi = std::stod(token);
         std::getline(ss, token, ',');
         tc.params.rho = std::stod(token);
-
         std::getline(ss, token, ',');
         tc.expected_price = std::stod(token);
 
@@ -70,28 +68,33 @@ std::vector<TestCase> load_test_cases(const std::string &filename) {
     return cases;
 }
 
-// LOAD DATA
-std::vector<TestCase> all_cases = load_test_cases("../tests/tests_data.csv");
+// Lazy load
+static const auto all_cases = load_test_cases("tests/tests_data.csv");
 
 class HestonTest : public ::testing::TestWithParam<TestCase> {};
 
-TEST_P(HestonTest, Convergence) {
+TEST_P(HestonTest, CPUConvergence) {
     constexpr unsigned int RNG_SEED = 42;
     const TestCase &tc = GetParam();
 
-    HestonSimulator engine(tc.params, RNG_SEED);
+    std::unique_ptr<IHestonPricer> pricer = std::make_unique<CPUHestonPricer>();
 
-    auto result =
-        engine.price_european_call(10000, 365, DiscretizationScheme::QuadraticExponential);
+    constexpr size_t NUM_PATHS = 100'000;
+    constexpr size_t NUM_STEPS = 365;
+
+    auto result = pricer->price(tc.params, NUM_PATHS, NUM_STEPS,
+                                DiscretizationScheme::EulerMaruyama, RNG_SEED);
 
     EXPECT_NEAR(result.price, tc.expected_price, 3.0 * result.std_error);
 }
 
 INSTANTIATE_TEST_SUITE_P(CSVCases, HestonTest, ::testing::ValuesIn(all_cases),
                          [](const ::testing::TestParamInfo<TestCase> &test_info) {
-                             return std::string("Case") + std::to_string(test_info.index);
+                             return "Case_" + std::to_string(test_info.index);
                          });
 
+// Output formatting
 void PrintTo(const TestCase &tc, std::ostream *os) {
-    *os << "S0=" << tc.params.S0 << ", K=" << tc.params.K << ", expected=" << tc.expected_price;
+    *os << "{ S0: " << tc.params.S0 << ", K: " << tc.params.K << ", T: " << tc.params.T
+        << ", expected: " << tc.expected_price << " }";
 }

@@ -5,10 +5,27 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Python Graphs!
+
+# CUDA CONFIGURATION SETTINGS
+option(ENABLE_CUDA "Configure with CUDA acceleration scheme" OFF)
+
+set(CORE_SOURCES
+    src/cpu/cpu_heston_pricer.cpp
+)
+
+if(ENABLE_CUDA)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_STANDARD 17)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+    
+    # In case CUDA is enabled, add it to the core library
+    list(APPEND CORE_SOURCES src/cuda/cuda_heston_pricer.cu)
+    add_compile_definitions(BUILD_CUDA)
+endif()
+
+# DEPENDENCIES, Python and GTest for testing and benchmarking
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
-# GTest
 include(FetchContent)
 FetchContent_Declare(
     googletest
@@ -17,11 +34,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-# I have compiled this as library so it does not have to compile multiple times
-add_library(heston_core STATIC src/heston.cpp)
+# CORE Library: Avoids creating the class with every executable
+add_library(heston_core STATIC ${CORE_SOURCES}) # Core sources was defined to include CUDA or not
 target_include_directories(heston_core PUBLIC include)
 
-# MAIN
+if(ENABLE_CUDA)
+    set_target_properties(heston_core PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+endif()
+
+# MAIN SIMULATOR
 add_executable(heston_sim src/main.cpp)
 target_link_libraries(heston_sim PRIVATE heston_core)
 
@@ -32,7 +55,7 @@ target_compile_definitions(heston_benchmarks PRIVATE
     PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-# TESTING
+# UNIT TESTING
 enable_testing()
 add_executable(
     heston_tests 
@@ -45,7 +68,7 @@ include(GoogleTest)
 gtest_discover_tests(heston_tests)
 
 # STRICT WARNINGS
-set(COMPILER_WARNINGS
+set(CXX_WARNINGS
     -Wall
     -Wextra
     -Wpedantic
@@ -53,18 +76,22 @@ set(COMPILER_WARNINGS
     -Wshadow
 )
 
-# HPC
 foreach(target heston_core heston_sim heston_benchmarks heston_tests)
-    target_compile_options(${target} PRIVATE ${COMPILER_WARNINGS})
-    
+    # NVCC ignores GCC flags
     target_compile_options(${target} PRIVATE 
-        $<$<CONFIG:Release>:-O3 -march=native -ffast-math>
+        $<$<COMPILE_LANGUAGE:CXX>:${CXX_WARNINGS}>
+    )
+    
+    # Configure flags depending on compiler
+    target_compile_options(${target} PRIVATE 
+        $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-O3 -march=native -ffast-math>
+        $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CUDA>>:-O3 --use_fast_math>
     )
 endforeach()
 
+# Python config: Graphs, Venv etc...
 set(VENV_DIR "${CMAKE_BINARY_DIR}/venv")
 
-# PYTHON LIBRARIES FOR SCRIPTING
 if(WIN32)
     set(VENV_PYTHON "${VENV_DIR}/Scripts/python.exe")
     set(VENV_PIP "${VENV_DIR}/Scripts/pip.exe")
@@ -74,30 +101,30 @@ else()
 endif()
 
 if(NOT EXISTS "${VENV_DIR}")
-    message(STATUS "Creando entorno virtual de Python en: ${VENV_DIR}")
+    message(STATUS "Setting up python venv in: ${VENV_DIR}")
     execute_process(
         COMMAND ${Python3_EXECUTABLE} -m venv ${VENV_DIR}
         RESULT_VARIABLE venv_create_result
     )
     if(NOT venv_create_result EQUAL 0)
-        message(FATAL_ERROR "No se pudo crear el entorno virtual de Python.")
+        message(FATAL_ERROR "Python venv could not be created")
     endif()
 endif()
 
-message(STATUS "Validando dependencias de Python (pandas, matplotlib, numpy)...")
+message(STATUS "Validating dependencies (Numpy, Pandas, Matplotlib...)")
 execute_process(
     COMMAND ${VENV_PIP} install -r "${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
     RESULT_VARIABLE pip_install_result
 )
 if(NOT pip_install_result EQUAL 0)
-    message(FATAL_ERROR "Error al instalar las dependencias de Python desde requirements.txt")
+    message(FATAL_ERROR "Could not install python dependencies from requirements.txt")
 endif()
 
-# BENCHMARKS PIPELINE
+# Benchmarking pipeline
 add_custom_target(run_benchmarks
     COMMAND $<TARGET_FILE:heston_benchmarks>
     COMMAND ${VENV_PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/plot_benchmarks.py
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Benchmarking C++ code..."
+    COMMENT "Running C++ benchmarks and python graphs"
     DEPENDS heston_benchmarks
 )
