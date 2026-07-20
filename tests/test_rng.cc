@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-// Cabeceras modulares de la nueva arquitectura
 #include "core/pricer_interface.hpp"
 #include "core/types.hpp"
 #include "cpu/cpu_heston_pricer.hpp"

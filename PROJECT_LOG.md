@@ -130,3 +130,28 @@ Implement benchmarking with python graphs
 * Review the codebase and progress, internalize the structure
 
 
+## 2026-07-20
+
+### Session Goal
+Code refactoring. New architecture which isolates CUDA Kernels.
+
+### Time Spent
+5 Hours
+
+### Completed
+* New Architechture. 
+* Implemented Polymorfism and abstract classes.
+* Isolated CUDA Kernels
+* CMake Professiona configuration
+
+### Problems encountered
+* CMake, knowing it deeply could have saved lots of time
+* Advanced OOP, if implemented directly, I would have saved time
+
+### Lessons learned
+* Find a slot to learn deeply the tools of the trade
+
+### Next Session
+* Start with CUDA (Today's meeting has been postponed for Wednesday)
+* Check the book and notes, start writing something (Euler Maruyama Prototype at least)
+* I personally do not know how much it will take to complete the CUDA Kernels

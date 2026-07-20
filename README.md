@@ -1,7 +1,11 @@
 # Heston Monte Carlo Pricing Engine (C++20/CUDA)
 
 ## Overview
-First serious finance project blending my C++ and CUDA knowledge to create something interesting. This project in particular will focus on pricing european call options.
+First serious finance project blending my C++ and CUDA knowledge to create something interesting. This project in particular will focus on pricing european call options. One first result by comparing Euler Maruyama and QE-Scheme for solving Heston model, has resulted in the following graph:
+
+![Benchmark](benchmarks/reports/price_vs_paths.png)
+
+We can see how the QE approach price differs from the EM approach. 
 
 ## Goals
 Create and measure a robust pricing engine parallelizing with CUDA. Taking advantage of the Monte Carlo simulation.

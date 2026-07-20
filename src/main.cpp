@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Elapsed time:  " << res.elapsed_seconds << "s\n";
         std::cout << "Throughput CPU:    " << static_cast<double>(num_paths) / res.elapsed_seconds
                   << " paths/sec\n";
-        std::cout << "============================================\n";
+        std::cout << "==================================================\n";
 
     } catch (const std::exception &e) {
         std::cerr << "[EXCEPTION] " << e.what() << "\n";
