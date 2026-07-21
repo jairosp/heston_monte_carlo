@@ -155,3 +155,22 @@ Code refactoring. New architecture which isolates CUDA Kernels.
 * Start with CUDA (Today's meeting has been postponed for Wednesday)
 * Check the book and notes, start writing something (Euler Maruyama Prototype at least)
 * I personally do not know how much it will take to complete the CUDA Kernels
+
+## 2026-07-21
+
+### Session Goal
+SSH Server configuration, make sure everything works, first kernel boilerplate. Vim, tmux and general config.
+
+### Time Spent
+3 Hours
+
+### Problems encountered
+Found it tedious to adapt to tmux + vim workflow. VSCode Remote feels slow or freezes somehow. I will take this opportunity to learn a new workflow.
+
+### Lessons learned
+Coping with servers, dependencies and remote machines
+
+### Next Session
+Meeting with my professor to discuss CUDA structure, implementations and draft the project outline.
+
+
