@@ -1,10 +1,9 @@
 #include <filesystem>
-#include <format>
-#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <vector>
-
+#include <fstream>
 // New architecture
 #include "core/pricer_interface.hpp"
 #include "core/types.hpp"
@@ -97,9 +96,15 @@ int main() {
         std::string scheme_str =
             (res.scheme == DiscretizationScheme::EulerMaruyama) ? "EulerMaruyama" : "QE";
 
-        csv_file << std::format("{},{},{},{},{:.6f},{:.6f},{:.6f}\n", engine_str, scheme_str,
-                                res.paths, res.steps, res.metrics.price, res.metrics.std_error,
-                                res.metrics.elapsed_seconds);
+    	csv_file << engine_str << ','
+		<< scheme_str << ','
+		<< res.paths << ','
+		<< res.steps << ','
+		<< std::fixed << std::setprecision(6)
+		<< res.metrics.price << ','
+		<< res.metrics.std_error << ','
+		<< res.metrics.elapsed_seconds
+		<< '\n';
     }
 
     csv_file.close();
