@@ -46,16 +46,29 @@ def main():
     df = pd.read_csv(csv_path)
 
     euler = (
-        df[df["Scheme"] == "EulerMaruyama"]
+        df[(df["Scheme"] == "EulerMaruyama") & (df["Engine"] == "CPU")]
+        .sort_values("Paths")
+        .copy()
+    )
+
+    euler_parallel = (
+        df[(df["Scheme"] == "EulerMaruyama") & (df["Engine"] == "CPU_Parallel")]
         .sort_values("Paths")
         .copy()
     )
 
     qe = (
-        df[df["Scheme"] == "QE"]
+        df[(df["Scheme"] == "QE") & (df["Engine"] == "CPU")]
         .sort_values("Paths")
         .copy()
     )
+
+    qe_parallel = (
+        df[(df["Scheme"] == "QE") & (df["Engine"] == "CPU_Parallel")]
+        .sort_values("Paths")
+        .copy()
+    )
+    
 
     # ============================================================
     # FIGURE 1 : PRICE VS PATHS
@@ -63,35 +76,25 @@ def main():
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    ax.plot(
-        euler["Paths"],
-        euler["Price"],
-        marker="o",
-        linewidth=2.5,
-        label="Euler-Maruyama"
-    )
+    to_plot = [euler, qe]
+    labels = ["EM", "QE"]
 
-    ax.fill_between(
-        euler["Paths"],
-        euler["Price"] - 1.96 * euler["StdError"],
-        euler["Price"] + 1.96 * euler["StdError"],
-        alpha=0.20
-    )
 
-    ax.plot(
-        qe["Paths"],
-        qe["Price"],
-        marker="s",
-        linewidth=2.5,
-        label="Quadratic-Exponential"
-    )
+    for case, lab in zip(to_plot, labels):
+        ax.plot(
+            case["Paths"],
+            case["Price"],
+            marker="o",
+            linewidth=2.5,
+            label=lab
+        )
 
-    ax.fill_between(
-        qe["Paths"],
-        qe["Price"] - 1.96 * qe["StdError"],
-        qe["Price"] + 1.96 * qe["StdError"],
-        alpha=0.20
-    )
+        ax.fill_between(
+            case["Paths"],
+            case["Price"] - 1.96 * case["StdError"],
+            case["Price"] + 1.96 * case["StdError"],
+            alpha=0.20
+        )   
 
     ax.set_xscale("log")
 
@@ -115,7 +118,89 @@ def main():
     )
 
     # ============================================================
-    # FIGURE 2 : STANDARD ERROR VS PATHS
+    # FIGURE 2 : Execution Time (Euler)
+    # ============================================================
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    to_plot = [euler, euler_parallel]
+    labels = ["EM", "EM Parallel CPU"]
+
+
+    for case, lab in zip(to_plot, labels):
+        ax.plot(
+            case["Paths"],
+            case["TimeSeconds"],
+            marker="o",
+            linewidth=2.5,
+            label=lab
+        ) 
+
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+
+    ax.set_title(
+        "Simulation Time vs Number of Paths"
+    )
+
+    ax.set_xlabel("Number of Paths")
+    ax.set_ylabel("Time (Seconds)")
+
+    style_axis(ax)
+
+    ax.legend(frameon=False)
+
+    fig.tight_layout()
+
+    fig.savefig(
+        output_dir / "time_vs_paths_em.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    # ============================================================
+    # FIGURE 2 : Execution Time (QE)
+    # ============================================================
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    to_plot = [qe, qe_parallel]
+    labels = ["QE", "QE Parallel CPU"]
+
+
+    for case, lab in zip(to_plot, labels):
+        ax.plot(
+            case["Paths"],
+            case["TimeSeconds"],
+            marker="o",
+            linewidth=2.5,
+            label=lab
+        ) 
+
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+
+    ax.set_title(
+        "Simulation Time vs Number of Paths"
+    )
+
+    ax.set_xlabel("Number of Paths")
+    ax.set_ylabel("Time (Seconds)")
+
+    style_axis(ax)
+
+    ax.legend(frameon=False)
+
+    fig.tight_layout()
+
+    fig.savefig(
+        output_dir / "time_vs_paths_qe.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    # ============================================================
+    # FIGURE 4 : STANDARD ERROR VS PATHS
     # ============================================================
 
     fig, ax = plt.subplots(figsize=(10, 6))

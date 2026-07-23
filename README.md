@@ -1,15 +1,17 @@
 # Heston Monte Carlo Pricing Engine (C++20/CUDA)
 
 ## Overview
-First serious finance project blending my C++ and CUDA knowledge to create something interesting. This project in particular will focus on pricing european call options. One first result by comparing Euler Maruyama and QE-Scheme for solving Heston model, has resulted in the following graph:
+This is my first serious quantitative finance project, combining C++ and CUDA to build a high-performance Monte Carlo pricing engine. The project focuses on pricing European call options under the Heston stochastic volatility model.
 
-![Benchmark](benchmarks/reports/price_vs_paths.png)
+To demonstrate the performance benefits of parallelization, we can compare the execution times of the Euler–Maruyama method with and without CPU parallelization. For the same number of simulated paths, CPU parallelization delivers approximately a 10× speedup.
 
-We can see how the QE approach price differs from the EM approach. Also we can see how the std error diminishes: 
+![Benchmark](benchmarks/reports/time_vs_paths_em.png)
+
+A similar effect can be observed with the Quadratic Exponential (QE) scheme. Although this method involves additional computations and may appear slower at first glance, it is generally more robust and still achieves a consistent ~10× speedup through CPU parallelization.
 
 ![Benchmark](benchmarks/reports/stderr_vs_paths.png)
 
-Both approaches seem to deliver a similar std error across different number of paths.
+Both approaches exhibit comparable performance gains from CPU parallelization. The next step is to investigate whether these results can be improved further through GPU acceleration and massive parallelization using CUDA.
 
 ## Goals
 Create and measure a robust pricing engine parallelizing with CUDA. Taking advantage of the Monte Carlo simulation.
