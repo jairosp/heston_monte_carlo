@@ -23,15 +23,19 @@ My main goal is to show or dismantle the fact that CUDA Parallelization can brin
 ## Mathematical Model and Foundations
 The Heston model is a stochastic volatility model in which both the asset price (S_t) and its variance (v_t) evolve randomly over time:
 
-[
+$$
 dS_t = rS_t,dt + \sqrt{v_t}S_t,dW_t^S
-]
+$$
 
-[
+$$
 dv_t = \kappa(\theta - v_t),dt + \xi\sqrt{v_t},dW_t^v
-]
+$$
 
-with correlation (dW_t^S dW_t^v = \rho,dt).
+with correlation 
+
+$$
+(dW_t^S dW_t^v = \rho,dt).
+$$
 
 Since no closed-form solution exists for the simulated paths, option prices are estimated using Monte Carlo simulation. The first discretization scheme implemented is Euler–Maruyama (EM), a simple and widely used numerical method for stochastic differential equations. We then implement the Quadratic Exponential (QE) scheme, which is specifically designed for the Heston variance process and generally provides greater stability and accuracy while preserving the positivity of variance.
 
