@@ -9,7 +9,7 @@ To demonstrate the performance benefits of parallelization, we can compare the e
 
 A similar effect can be observed with the Quadratic Exponential (QE) scheme. Although this method involves additional computations and may appear slower at first glance, it is generally more robust and still achieves a consistent ~10× speedup through CPU parallelization.
 
-![Benchmark](benchmarks/reports/stderr_vs_paths.png)
+![Benchmark](benchmarks/reports/time_vs_paths_qe.png)
 
 Both approaches exhibit comparable performance gains from CPU parallelization. The next step is to investigate whether these results can be improved further through GPU acceleration and massive parallelization using CUDA.
 
