@@ -8,19 +8,19 @@
 
 __global__ void simulate_paths(...)
 {
-	int path_id = blockIdx.x * blockDim.x + threadIdx.x;
+        int path_id = blockIdx.x * blockDim.x + threadIdx.x;
 
-	if(path_id >= num_paths)
-		return;
+        if(path_id >= num_paths)
+                return;
 
-	double X = ...;
+        double X = ...;
         double v = ...;
 
-	for(step ...){
-				     
-	}
+        for(step ...){
 
-	payoffs[path_id] = ...;
+        }
+
+        payoffs[path_id] = ...;
 }
 */
 // THIS SHOULD BECOME A CUDA KERNEL
@@ -58,6 +58,7 @@ PricingResult CUDAHestonPricer::price(const HestonParameters &params, size_t num
     const double sqrt_dt = std::sqrt(dt);
     const double rho_comp = std::sqrt(1.0 - params.rho * params.rho);
 
+    // THIS IS GOING TO BE REPLACED
     for (size_t path = 0; path < num_paths; ++path) {
         double X = std::log(params.S0);
         double v = params.v0;

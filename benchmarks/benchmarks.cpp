@@ -1,13 +1,14 @@
 #include <filesystem>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <fstream>
 // New architecture
 #include "core/pricer_interface.hpp"
 #include "core/types.hpp"
 #include "cpu/cpu_heston_pricer.hpp"
+#include "cpu/openmp_heston_pricer.hpp"
 
 #ifdef BUILD_CUDA
 #include "cuda/cuda_heston_pricer.hpp"
@@ -39,6 +40,7 @@ int main() {
     std::vector<BenchmarkResult> results;
 
     std::unique_ptr<IHestonPricer> cpu_pricer = std::make_unique<CPUHestonPricer>();
+    std::unique_ptr<IHestonPricer> cpu_parallel_pricer = std::make_unique<OpenMPHestonPricer>();
 
     // Euler-Maruyama Samples
     for (size_t paths : num_paths) {
@@ -47,6 +49,15 @@ int main() {
 
         results.push_back(
             {EngineType::CPU, DiscretizationScheme::EulerMaruyama, NUM_STEPS, paths, metrics});
+    }
+
+    // Euler-Maruyama Samples Parallel
+    for (size_t paths : num_paths) {
+        PricingResult metrics = cpu_parallel_pricer->price(
+            params, paths, NUM_STEPS, DiscretizationScheme::EulerMaruyama, RNG_SEED);
+
+        results.push_back({EngineType::CPU_Parallel, DiscretizationScheme::EulerMaruyama, NUM_STEPS,
+                           paths, metrics});
     }
 
     // QE-Scheme Samples
@@ -58,9 +69,20 @@ int main() {
                            paths, metrics});
     }
 
+    // QE-Scheme Samples Parallel
+    for (size_t paths : num_paths) {
+        PricingResult metrics = cpu_parallel_pricer->price(
+            params, paths, NUM_STEPS, DiscretizationScheme::QuadraticExponential, RNG_SEED);
+
+        results.push_back({EngineType::CPU_Parallel, DiscretizationScheme::QuadraticExponential,
+                           NUM_STEPS, paths, metrics});
+    }
+
     // GPU Benchmarking (To be built)
 #ifdef BUILD_CUDA
     std::unique_ptr<IHestonPricer> gpu_pricer = std::make_unique<CUDAHestonPricer>();
+
+    // Euler Maruyama
     for (size_t paths : num_paths) {
         try {
             PricingResult metrics = gpu_pricer->price(
@@ -68,6 +90,20 @@ int main() {
 
             results.push_back(
                 {EngineType::GPU, DiscretizationScheme::EulerMaruyama, NUM_STEPS, paths, metrics});
+        } catch (const std::exception &e) {
+            std::cerr << "[GPU Benchmark inactive]: " << e.what() << "\n";
+            break;
+        }
+    }
+
+    // Quadratic Exponential
+    for (size_t paths : num_paths) {
+        try {
+            PricingResult metrics = gpu_pricer->price(
+                params, paths, NUM_STEPS, DiscretizationScheme::QuadraticExponential, RNG_SEED);
+
+            results.push_back({EngineType::GPU, DiscretizationScheme::QuadraticExponential,
+                               NUM_STEPS, paths, metrics});
         } catch (const std::exception &e) {
             std::cerr << "[GPU Benchmark inactive]: " << e.what() << "\n";
             break;
@@ -92,19 +128,19 @@ int main() {
     csv_file << "Engine,Scheme,Paths,Timesteps,Price,StdError,TimeSeconds\n";
 
     for (const auto &res : results) {
-        std::string engine_str = (res.engine == EngineType::CPU) ? "CPU" : "GPU";
+        std::string engine_str;
+        if (res.engine == EngineType::CPU)
+            engine_str = "CPU";
+        else if (res.engine == EngineType::CPU_Parallel)
+            engine_str = "CPU_Parallel";
+        else
+            engine_str = "GPU";
         std::string scheme_str =
             (res.scheme == DiscretizationScheme::EulerMaruyama) ? "EulerMaruyama" : "QE";
 
-    	csv_file << engine_str << ','
-		<< scheme_str << ','
-		<< res.paths << ','
-		<< res.steps << ','
-		<< std::fixed << std::setprecision(6)
-		<< res.metrics.price << ','
-		<< res.metrics.std_error << ','
-		<< res.metrics.elapsed_seconds
-		<< '\n';
+        csv_file << engine_str << ',' << scheme_str << ',' << res.paths << ',' << res.steps << ','
+                 << std::fixed << std::setprecision(6) << res.metrics.price << ','
+                 << res.metrics.std_error << ',' << res.metrics.elapsed_seconds << '\n';
     }
 
     csv_file.close();

@@ -5,12 +5,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# 1. LOCALIZACIÓN DE OPENMP
+find_package(OpenMP REQUIRED)
 
 # CUDA CONFIGURATION SETTINGS
 option(ENABLE_CUDA "Configure with CUDA acceleration scheme" OFF)
 
+# 2. FUENTES CORE (Sintaxis corregida sin comas)
 set(CORE_SOURCES
     src/cpu/cpu_heston_pricer.cpp
+    src/cpu/openmp_heston_pricer.cpp
 )
 
 if(ENABLE_CUDA)
@@ -35,8 +39,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 # CORE Library: Avoids creating the class with every executable
-add_library(heston_core STATIC ${CORE_SOURCES}) # Core sources was defined to include CUDA or not
+add_library(heston_core STATIC ${CORE_SOURCES})
 target_include_directories(heston_core PUBLIC include)
+
+# 3. ENLAZADO DE OPENMP A HESTON_CORE (Propagación PUBLIC)
+target_link_libraries(heston_core PUBLIC OpenMP::OpenMP_CXX)
 
 if(ENABLE_CUDA)
     set_target_properties(heston_core PROPERTIES
@@ -84,7 +91,7 @@ foreach(target heston_core heston_sim heston_benchmarks heston_tests)
     
     # Configure flags depending on compiler
     target_compile_options(${target} PRIVATE 
-        $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-O3 -march=native -ffast-math>
+        $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-O3 -fopenmp -march=native -ffast-math>
         $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CUDA>>:-O3 --use_fast_math>
     )
 endforeach()

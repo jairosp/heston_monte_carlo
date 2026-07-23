@@ -1,6 +1,7 @@
 #include "core/pricer_interface.hpp"
 #include "core/types.hpp"
 #include "cpu/cpu_heston_pricer.hpp"
+#include "cpu/openmp_heston_pricer.hpp"
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -19,6 +20,8 @@ int main(int argc, char *argv[]) {
         std::string_view arg = argv[i];
         if (arg == "--gpu")
             engine_type = EngineType::GPU;
+        else if (arg == "--parallel")
+            engine_type = EngineType::CPU_Parallel;
         if (arg == "--qe")
             scheme = DiscretizationScheme::QuadraticExponential;
     }
@@ -28,7 +31,12 @@ int main(int argc, char *argv[]) {
     if (engine_type == EngineType::CPU) {
         std::cout << "[INFO] Running CPU engine...\n";
         pricer = std::make_unique<CPUHestonPricer>();
-    } else {
+    } else if (engine_type == EngineType::CPU_Parallel) {
+        std::cout << "[INFO] Running parallel CPU engine...\n";
+        pricer = std::make_unique<OpenMPHestonPricer>();
+    }
+
+    else {
 #ifdef BUILD_CUDA
         std::cout << "[INFO] Running GPU engine (CUDA)...\n";
         pricer = std::make_unique<CUDAHestonPricer>();
@@ -58,13 +66,13 @@ int main(int argc, char *argv[]) {
 
         std::cout << std::fixed << std::setprecision(5);
         std::cout << "\n================ Pricing Result ================\n";
-        std::cout << "Opcion Call Price: " << res.price << "\n";
+        std::cout << "Option Call Price:  " << res.price << "\n";
         std::cout << "Standard Error:     " << res.std_error << "\n";
-        std::cout << "95% CI : [ " << res.ci_lower << ", " << res.ci_upper << " ]\n ";
-        std::cout << "Elapsed time:  " << res.elapsed_seconds << "s\n";
-        std::cout << "Throughput CPU:    " << static_cast<double>(num_paths) / res.elapsed_seconds
-                  << " paths/sec\n";
-        std::cout << "==================================================\n";
+        std::cout << "95% CI :            [ " << res.ci_lower << ", " << res.ci_upper << " ]\n";
+        std::cout << "Elapsed time:       " << res.elapsed_seconds << "s\n";
+        std::cout << "Throughput CPU:     " << static_cast<double>(num_paths) / res.elapsed_seconds
+                  << "paths/sec\n";
+        std::cout << "================================================\n";
 
     } catch (const std::exception &e) {
         std::cerr << "[EXCEPTION] " << e.what() << "\n";

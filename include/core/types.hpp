@@ -1,6 +1,6 @@
 #pragma once
 
-enum class EngineType { CPU, GPU };
+enum class EngineType { CPU, CPU_Parallel, GPU };
 enum class DiscretizationScheme { EulerMaruyama, QuadraticExponential };
 
 struct HestonParameters {
