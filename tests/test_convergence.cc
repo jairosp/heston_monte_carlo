@@ -1,4 +1,5 @@
 #include <fstream>
+#include <functional>
 #include <gtest/gtest.h>
 #include <memory>
 #include <ostream>
@@ -11,6 +12,12 @@
 #include "core/pricer_interface.hpp"
 #include "core/types.hpp"
 #include "cpu/cpu_heston_pricer.hpp"
+#include "cpu/openmp_heston_pricer.hpp"
+#include "tests/pricer_configs.hpp"
+
+constexpr size_t NUM_PATHS = 1'000'000;
+constexpr size_t NUM_STEPS = 365;
+constexpr unsigned int RNG_SEED = 42;
 
 struct TestCase {
     HestonParameters params;
@@ -71,27 +78,23 @@ inline std::vector<TestCase> load_test_cases(const std::string &filename) {
 // Lazy load
 static const auto all_cases = load_test_cases("tests/tests_data.csv");
 
-class HestonTest : public ::testing::TestWithParam<TestCase> {};
+using ParamType = std::tuple<TestCase, PricerConfig>;
 
-TEST_P(HestonTest, CPUConvergence) {
-    constexpr unsigned int RNG_SEED = 42;
-    const TestCase &tc = GetParam();
+class HestonTest : public ::testing::TestWithParam<ParamType> {};
 
-    std::unique_ptr<IHestonPricer> pricer = std::make_unique<CPUHestonPricer>();
+TEST_P(HestonTest, Convergence) {
+    const auto &[tc, config] = GetParam();
 
-    constexpr size_t NUM_PATHS = 100'000;
-    constexpr size_t NUM_STEPS = 365;
+    auto pricer = config.create_pricer();
 
-    auto result = pricer->price(tc.params, NUM_PATHS, NUM_STEPS,
-                                DiscretizationScheme::EulerMaruyama, RNG_SEED);
+    auto result = pricer->price(tc.params, NUM_PATHS, NUM_STEPS, config.scheme, RNG_SEED);
 
     EXPECT_NEAR(result.price, tc.expected_price, 3.0 * result.std_error);
 }
 
-INSTANTIATE_TEST_SUITE_P(CSVCases, HestonTest, ::testing::ValuesIn(all_cases),
-                         [](const ::testing::TestParamInfo<TestCase> &test_info) {
-                             return "Case_" + std::to_string(test_info.index);
-                         });
+INSTANTIATE_TEST_SUITE_P(CSVCases, HestonTest,
+                         ::testing::Combine(::testing::ValuesIn(all_cases),
+                                            ::testing::ValuesIn(configs)));
 
 // Output formatting
 void PrintTo(const TestCase &tc, std::ostream *os) {
