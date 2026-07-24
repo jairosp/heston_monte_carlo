@@ -8,16 +8,26 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        compiler: [g++, clang++]
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake python3-venv
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            python3-venv \
+            clang
 
       - name: Configure
-        run: cmake -B build
+        run: |
+          cmake -B build \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
 
       - name: Build
         run: cmake --build build
