@@ -21,7 +21,7 @@ Current stage: Parallelizing both on CPU (Done!) and GPU (In progress!) in order
 My main goal is to show or dismantle the fact that CUDA Parallelization can bring massive improvements in efficiency and put to practice my recently acquired CUDA/C++ skills in a large scale project.
 
 ## Mathematical Model and Foundations
-The Heston model is a stochastic volatility model in which both the asset price ($ S_t $) and its variance ($ v_t $) evolve randomly over time:
+The Heston model is a stochastic volatility model in which both the asset price ($S_t$) and its variance ($v_t$) evolve randomly over time.
 
 $$
 dS_t = rS_t,dt + \sqrt{v_t}S_t,dW_t^S
