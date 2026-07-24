@@ -1,7 +1,5 @@
 # Heston Monte Carlo Pricing Engine (C++20/CUDA)
 
-# Heston Monte Carlo Engine
-
 [![Tests](https://github.com/jairosp/heston_monte_carlo/actions/workflows/tests.yml/badge.svg)](https://github.com/jairosp/heston_monte_carlo/actions/workflows/tests.yml)
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![OpenMP](https://img.shields.io/badge/OpenMP-Enabled-green)
