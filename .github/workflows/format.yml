@@ -1,0 +1,30 @@
+name: Formatting
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'include/**'
+      - 'tests/**'
+      - 'benchmarks/**'
+      - '.clang-format'
+
+  pull_request:
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Check formatting
+        run: |
+          find include src tests benchmarks \
+            \( -name "*.hpp" -o -name "*.h" -o -name "*.cpp" -o -name "*.cc" -o -name "*.cu" \) \
+            -exec clang-format --dry-run --Werror {} +
