@@ -42,6 +42,9 @@ int main() {
     std::unique_ptr<IHestonPricer> cpu_pricer = std::make_unique<CPUHestonPricer>();
     std::unique_ptr<IHestonPricer> cpu_parallel_pricer = std::make_unique<OpenMPHestonPricer>();
 
+    /* POTENTIAL FIX: CREATE A SIMILAR FOR LOOP LIKE THE ONE IN
+     TESTING AND JUST ITERATE INSTEAD OF 4 FOR LOOPS*/
+
     // Euler-Maruyama Samples
     for (size_t paths : num_paths) {
         PricingResult metrics = cpu_pricer->price(params, paths, NUM_STEPS,

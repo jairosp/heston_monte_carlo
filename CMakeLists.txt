@@ -5,13 +5,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# 1. LOCALIZACIÓN DE OPENMP
+# LOCATE OpenMP
 find_package(OpenMP REQUIRED)
 
 # CUDA CONFIGURATION SETTINGS
 option(ENABLE_CUDA "Configure with CUDA acceleration scheme" OFF)
 
-# 2. FUENTES CORE (Sintaxis corregida sin comas)
+# CORE SOURCES 
 set(CORE_SOURCES
     src/cpu/cpu_heston_pricer.cpp
     src/cpu/openmp_heston_pricer.cpp
@@ -42,7 +42,7 @@ FetchContent_MakeAvailable(googletest)
 add_library(heston_core STATIC ${CORE_SOURCES})
 target_include_directories(heston_core PUBLIC include)
 
-# 3. ENLAZADO DE OPENMP A HESTON_CORE (Propagación PUBLIC)
+# Adding OpenMP to core library
 target_link_libraries(heston_core PUBLIC OpenMP::OpenMP_CXX)
 
 if(ENABLE_CUDA)

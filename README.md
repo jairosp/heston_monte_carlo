@@ -21,7 +21,7 @@ Current stage: Parallelizing both on CPU (Done!) and GPU (In progress!) in order
 My main goal is to show or dismantle the fact that CUDA Parallelization can bring massive improvements in efficiency and put to practice my recently acquired CUDA/C++ skills in a large scale project.
 
 ## Mathematical Model and Foundations
-The Heston model is a stochastic volatility model in which both the asset price (S_t) and its variance (v_t) evolve randomly over time:
+The Heston model is a stochastic volatility model in which both the asset price ($ S_t $) and its variance ($ v_t $) evolve randomly over time:
 
 $$
 dS_t = rS_t,dt + \sqrt{v_t}S_t,dW_t^S
@@ -41,7 +41,7 @@ Since no closed-form solution exists for the simulated paths, option prices are 
 
 ## Project Structure
 
-* **.github**: GitHub workflows for CI/CD.
+* **.github/**: GitHub workflows for CI/CD.
 * **benchmarks/**: Benchmarking scripts, reports, plots, and performance comparisons between different pricing engines and numerical schemes.
 * **docs/**: Weekly project logs documenting progress, challenges, milestones, and future goals.
 * **include/**: Header files and project interfaces.
