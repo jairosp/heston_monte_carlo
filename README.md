@@ -5,6 +5,7 @@
 ![OpenMP](https://img.shields.io/badge/OpenMP-Enabled-green)
 ![CUDA](https://img.shields.io/badge/CUDA-In%20Progress-orange)
 ![Linux](https://img.shields.io/badge/Linux-Tested-success)
+![License](https://img.shields.io/github/license/jairosp/heston_monte_carlo)
 
 ## Overview
 This is my first serious quantitative finance project, combining C++ and CUDA to build a high-performance Monte Carlo pricing engine. The project focuses on pricing European call options under the Heston stochastic volatility model.
