@@ -13,6 +13,73 @@ A similar effect can be observed with the Quadratic Exponential (QE) scheme. Alt
 
 Both approaches exhibit comparable performance gains from CPU parallelization. The next step is to investigate whether these results can be improved further through GPU acceleration and massive parallelization using CUDA.
 
+## Build and Run
+
+### Requirements
+
+- Linux
+- CMake 3.25+
+- C++20 compiler
+- OpenMP
+- Python 3
+
+### Build
+
+```bash
+git clone https://github.com/jairosp/heston_monte_carlo.git
+cd heston_monte_carlo
+
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+### Run
+
+```bash
+./build/heston_sim
+```
+
+Parallel CPU engine:
+
+```bash
+./build/heston_sim --parallel
+```
+
+CUDA engine:
+**Warning**: This is not yet implemented. 
+
+```bash
+./build/heston_sim --gpu
+```
+
+Quadratic-Exponential scheme (Euler scheme by default):
+
+```bash
+./build/heston_sim --qe
+```
+
+### Tests
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+### Benchmarks
+
+```bash
+cmake --build build --target run_benchmarks
+```
+
+Benchmark results are stored in `benchmarks/*.csv`, while generated reports are written to `benchmarks/reports/`.
+
+## Continuous Integration
+
+Unit tests are automatically executed through GitHub Actions on every push and pull request. For now, unit tests validate
+- Convergence to price.
+- Financial properties (positive price...)
+- Randon generators and their properties
+All of these across all the variations of engines and schemes.
+
 ## Goals
 Create and measure a robust pricing engine parallelizing with CUDA. Taking advantage of the Monte Carlo simulation parallel potential. First I have built an entire library for simulating the Heston Model. At every stage I implement both the Euler Maruyama and the Quadratic Exponential appraoches to compare them.
 
