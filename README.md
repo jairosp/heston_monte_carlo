@@ -1,5 +1,13 @@
 # Heston Monte Carlo Pricing Engine (C++20/CUDA)
 
+# Heston Monte Carlo Engine
+
+[![Tests](https://github.com/jairosp/heston_monte_carlo/actions/workflows/tests.yml/badge.svg)](https://github.com/jairosp/heston_monte_carlo/actions/workflows/tests.yml)
+![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
+![OpenMP](https://img.shields.io/badge/OpenMP-Enabled-green)
+![CUDA](https://img.shields.io/badge/CUDA-In%20Progress-orange)
+![Linux](https://img.shields.io/badge/Linux-Tested-success)
+
 ## Overview
 This is my first serious quantitative finance project, combining C++ and CUDA to build a high-performance Monte Carlo pricing engine. The project focuses on pricing European call options under the Heston stochastic volatility model.
 
