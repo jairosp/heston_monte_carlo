@@ -41,6 +41,7 @@ Since no closed-form solution exists for the simulated paths, option prices are 
 
 ## Project Structure
 
+* **.github**: GitHub workflows for CI/CD.
 * **benchmarks/**: Benchmarking scripts, reports, plots, and performance comparisons between different pricing engines and numerical schemes.
 * **docs/**: Weekly project logs documenting progress, challenges, milestones, and future goals.
 * **include/**: Header files and project interfaces.
@@ -52,15 +53,6 @@ Since no closed-form solution exists for the simulated paths, option prices are 
 * **scripts/**: Python scripts used for data analysis and plot generation.
 * **src/**: Source code implementation. In addition to the corresponding `.cpp` files, it contains the project entry point (`main.cpp`).
 * **tests/**: Unit and validation tests covering convergence, financial properties, reproducibility, and implementation-specific behavior.
-
-### Other Files
-
-* **.clang-format**: Code formatting rules.
-* **.gitignore**: Files and directories excluded from version control.
-* **CMakeLists.txt**: Build system configuration.
-* **PROJECT_LOG.md**: Development notes and project journal.
-* **README.md**: Project overview and documentation.
-* **requirements.txt**: Python dependencies required for analysis scripts and benchmarking.
 
 
 ## Validation
