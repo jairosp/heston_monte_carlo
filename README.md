@@ -46,7 +46,8 @@ Parallel CPU engine:
 ```
 
 CUDA engine:
-**Warning**: This is not yet implemented. 
+
+**WARNING** This is not yet implemented. 
 
 ```bash
 ./build/heston_sim --gpu
@@ -70,7 +71,7 @@ ctest --test-dir build --output-on-failure
 cmake --build build --target run_benchmarks
 ```
 
-Benchmark results are stored in `benchmarks/*.csv`, while generated reports are written to `benchmarks/reports/`.
+Benchmark results are stored in `benchmarks/benchmarks.csv`, while generated reports are written to `benchmarks/reports/`.
 
 ## Continuous Integration
 
