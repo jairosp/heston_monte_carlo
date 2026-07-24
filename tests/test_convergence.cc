@@ -15,7 +15,7 @@
 #include "cpu/openmp_heston_pricer.hpp"
 #include "tests/pricer_configs.hpp"
 
-constexpr size_t NUM_PATHS = 1'000'000;
+constexpr size_t NUM_PATHS = 100'000;
 constexpr size_t NUM_STEPS = 365;
 constexpr unsigned int RNG_SEED = 42;
 

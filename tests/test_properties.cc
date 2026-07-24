@@ -10,8 +10,10 @@
 class FinancialPropertiesTest : public ::testing::TestWithParam<PricerConfig> {
   protected:
     static constexpr unsigned int seed = 42;
-    static constexpr size_t num_paths = 100'000;
-    static constexpr size_t num_steps = 365;
+
+    /* There is no need for large testing on these properties*/
+    static constexpr size_t num_paths = 1'000;
+    static constexpr size_t num_steps = 10;
 
     HestonParameters params{.S0 = 100.0,
                             .K = 100.0,

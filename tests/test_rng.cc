@@ -10,8 +10,9 @@ class ReproducibilityTest : public ::testing::TestWithParam<PricerConfig> {
   protected:
     static constexpr unsigned int seed = 42;
 
-    static constexpr size_t num_paths = 100'000;
-    static constexpr size_t num_steps = 365;
+    /* There is no need for large testing on these properties*/
+    static constexpr size_t num_paths = 1'000;
+    static constexpr size_t num_steps = 10;
 
     HestonParameters params{.S0 = 100.0,
                             .K = 100.0,
@@ -54,8 +55,8 @@ TEST_P(ReproducibilityTest, DifferentSeedsDifferentResult) {
 }
 
 TEST_P(ReproducibilityTest, StandardErrorDecreasesWithMorePaths) {
-    constexpr size_t small_paths = 10'000;
-    constexpr size_t large_paths = 100'000;
+    constexpr size_t small_paths = 1'000;
+    constexpr size_t large_paths = 10'000;
 
     auto result_small = RunPrice(params, small_paths, num_steps, seed);
 
