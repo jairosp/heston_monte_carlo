@@ -198,4 +198,25 @@ OpenMP, while worth stuying deep, can be easy for simple parallelizations
 Meeting with my professor to discuss CUDA structure, implementations and draft the project outline.
 
 
+## 2026-07-24
 
+### Session Goal
+Implementing first parallelization approach on GPU.
+
+### Time Spent
+4 Hours
+
+### Completed
+* First GPU Parallelization
+* 10x efficiency reached
+* Generalized tests for various approaches
+* New graphs and updated README.md
+
+### Problems encountered
+Surprisingly little to none. Had to check how to automate tests for multiple engines on ChatGPT but everything else was smooth
+
+### Lessons learned
+OpenMP, while worth stuying deep, can be easy for simple parallelizations
+
+### Next Session
+Meeting with my professor to discuss CUDA structure, implementations and draft the project outline.
