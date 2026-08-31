@@ -9,13 +9,13 @@
 #include <stdexcept>
 #include <vector>
 
-#define CUDA_CHECK(call)                                                       
-    do {                                                                       
-        cudaError_t err = (call);                                              
-        if (err != cudaSuccess) {                                              
-            throw std::runtime_error(                                          
-                std::string("CUDA error: ") + cudaGetErrorString(err));        
-        }                                                                      
+#define CUDA_CHECK(call)                                                       \
+    do {                                                                       \
+        cudaError_t err = (call);                                              \
+        if (err != cudaSuccess) {                                              \
+            throw std::runtime_error(                                          \
+                std::string("CUDA error: ") + cudaGetErrorString(err));        \
+        }                                                                      \
     } while (0)
 
 __global__ void initRNG(curandStatePhilox4_32_10_t* states,
@@ -85,7 +85,7 @@ PricingResult CUDAHestonPricer::price(const HestonParameters& params,
                                       DiscretizationScheme scheme,
                                       unsigned int seed)
 {
-    if (scheme != DiscretizationScheme::Euler) {
+    if (scheme != DiscretizationScheme::EulerMaruyama) {
         throw std::invalid_argument(
             "CUDAHestonPricer currently supports Euler only.");
     }
@@ -145,7 +145,7 @@ PricingResult CUDAHestonPricer::price(const HestonParameters& params,
 
     float elapsed_ms = 0.0f;
 
-    CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, &start, &stop));
+    CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, start, stop));
 
     std::vector<double> payoffs(num_paths);
 
