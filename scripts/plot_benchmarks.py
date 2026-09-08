@@ -57,6 +57,12 @@ def main():
         .copy()
     )
 
+    euler_parallel = (
+        df[(df["Scheme"] == "EulerMaruyama") & (df["Engine"] == "GPU")]
+        .sort_values("Paths")
+        .copy()
+    )
+
     qe = (
         df[(df["Scheme"] == "QE") & (df["Engine"] == "CPU")]
         .sort_values("Paths")

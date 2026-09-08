@@ -67,6 +67,7 @@ PricingResult OpenMPHestonPricer::price(const HestonParameters &params, size_t n
         constexpr double gamma1 = 0.5;
         constexpr double gamma2 = 0.5;
 
+        // Precompute mathematical parameters
         qe.K0 = -params.kappa * params.rho * params.theta * dt / params.xi;
         qe.K1 =
             (params.kappa * params.rho / params.xi - 0.5) * gamma1 * dt - params.rho / params.xi;
