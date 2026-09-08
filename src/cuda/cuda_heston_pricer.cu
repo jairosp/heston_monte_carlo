@@ -79,17 +79,85 @@ __global__ void simulate_paths(double* payoffs,
     rng_states[path_id] = rng;
 }
 
+__global__ void simulate_paths_qe(double* payoffs,
+                                  curandStatePhilox4_32_10_t* rng_states,
+                                  size_t num_paths,
+                                  size_t num_steps,
+                                  double S0,
+                                  double K,
+                                  double v0,
+                                  double exp_kdt,
+                                  double A_const,
+                                  double B_const,
+                                  double theta,
+                                  double K0_,
+                                  double K1_,
+                                  double K2_,
+                                  double K3_,
+                                  double K4_)
+{
+    const size_t path_id =
+        static_cast<size_t>(blockIdx.x) * blockDim.x + threadIdx.x;
+
+    if (path_id >= num_paths)
+        return;
+
+    curandStatePhilox4_32_10_t rng = rng_states[path_id];
+
+    constexpr double psi_c = 1.5;
+
+    double X = log(S0);
+    double v = v0;
+
+    for (size_t step = 0; step < num_steps; ++step) {
+        const double m  = theta + (v - theta) * exp_kdt;
+        const double s2 = v * A_const + B_const;
+        const double psi = s2 / (m * m);
+
+        double v_next;
+
+        if (psi <= psi_c) {
+            const double inv_psi = 1.0 / psi;
+            const double b2 = 2.0 * inv_psi - 1.0 +
+                              sqrt(2.0 * inv_psi) * sqrt(2.0 * inv_psi - 1.0);
+            const double a = m / (1.0 + b2);
+            const double b = sqrt(b2);
+
+            const double Zv = curand_normal_double(&rng);
+            const double term = b + Zv;
+
+            v_next = a * term * term;
+        } else {
+            const double p = (psi - 1.0) / (psi + 1.0);
+            const double beta = (1.0 - p) / m;
+
+            const double Uv = curand_uniform_double(&rng);
+
+            v_next = (Uv <= p) ? 0.0
+                                : (1.0 / beta) * log((1.0 - p) / (1.0 - Uv));
+        }
+
+        const double Zx = curand_normal_double(&rng);
+        const double variance_term = fmax(K3_ * v + K4_ * v_next, 0.0);
+
+        X += K0_ + K1_ * v + K2_ * v_next + sqrt(variance_term) * Zx;
+
+        v = v_next;
+    }
+
+    const double ST = exp(X);
+    const double payoff = fmax(ST - K, 0.0);
+
+    payoffs[path_id] = payoff;
+    rng_states[path_id] = rng;
+}
+
 PricingResult CUDAHestonPricer::price(const HestonParameters& params,
                                       size_t num_paths,
                                       size_t num_steps,
                                       DiscretizationScheme scheme,
                                       unsigned int seed)
 {
-    if (scheme != DiscretizationScheme::EulerMaruyama) {
-        throw std::invalid_argument(
-            "CUDAHestonPricer currently supports Euler only.");
-    }
-
     if (num_paths == 0)
         throw std::invalid_argument("num_paths must be > 0");
 
@@ -100,42 +168,60 @@ PricingResult CUDAHestonPricer::price(const HestonParameters& params,
     curandStatePhilox4_32_10_t* d_rng_states = nullptr;
 
     CUDA_CHECK(cudaMalloc(&d_payoffs, num_paths * sizeof(double)));
-
     CUDA_CHECK(
         cudaMalloc(&d_rng_states, num_paths * sizeof(curandStatePhilox4_32_10_t)));
 
     constexpr int BLOCK_SIZE = 256;
-
     const int GRID_SIZE =
         static_cast<int>((num_paths + BLOCK_SIZE - 1) / BLOCK_SIZE);
 
     cudaEvent_t start;
     cudaEvent_t stop;
-
     CUDA_CHECK(cudaEventCreate(&start));
     CUDA_CHECK(cudaEventCreate(&stop));
-
     CUDA_CHECK(cudaEventRecord(start));
 
     initRNG<<<GRID_SIZE, BLOCK_SIZE>>>(
         d_rng_states, static_cast<unsigned long long>(seed), num_paths);
-
     CUDA_CHECK(cudaGetLastError());
 
-    simulate_paths<<<GRID_SIZE, BLOCK_SIZE>>>(
-        d_payoffs,
-        d_rng_states,
-        num_paths,
-        num_steps,
-        params.S0,
-        params.K,
-        params.T,
-        params.r,
-        params.kappa,
-        params.theta,
-        params.xi,
-        params.v0,
-        params.rho);
+    const double dt = params.T / static_cast<double>(num_steps);
+
+    if (scheme == DiscretizationScheme::EulerMaruyama) {
+        simulate_paths<<<GRID_SIZE, BLOCK_SIZE>>>(
+            d_payoffs, d_rng_states, num_paths, num_steps,
+            params.S0, params.K, params.T, params.r,
+            params.kappa, params.theta, params.xi, params.v0, params.rho);
+    } else if (scheme == DiscretizationScheme::QuadraticExponential) {
+        const double exp_kdt = std::exp(-params.kappa * dt);
+        const double one_minus_exp = 1.0 - exp_kdt;
+        const double xi2 = params.xi * params.xi;
+
+        const double A_const = (xi2 * exp_kdt * one_minus_exp) / params.kappa;
+        const double B_const =
+            (params.theta * xi2 * one_minus_exp * one_minus_exp) / (2.0 * params.kappa);
+
+        constexpr double gamma1 = 0.5;
+        constexpr double gamma2 = 0.5;
+
+        const double K0 = -params.kappa * params.rho * params.theta * dt / params.xi;
+        const double K1 =
+            (params.kappa * params.rho / params.xi - 0.5) * gamma1 * dt - params.rho / params.xi;
+        const double K2 =
+            (params.kappa * params.rho / params.xi - 0.5) * gamma2 * dt + params.rho / params.xi;
+        const double K3 = (1.0 - params.rho * params.rho) * gamma1 * dt;
+        const double K4 = (1.0 - params.rho * params.rho) * gamma2 * dt;
+
+        simulate_paths_qe<<<GRID_SIZE, BLOCK_SIZE>>>(
+            d_payoffs, d_rng_states, num_paths, num_steps,
+            params.S0, params.K, params.v0,
+            exp_kdt, A_const, B_const, params.theta,
+            K0, K1, K2, K3, K4);
+    } else {
+        CUDA_CHECK(cudaFree(d_payoffs));
+        CUDA_CHECK(cudaFree(d_rng_states));
+        throw std::invalid_argument("Unsupported discretization scheme.");
+    }
 
     CUDA_CHECK(cudaGetLastError());
     CUDA_CHECK(cudaDeviceSynchronize());
@@ -144,7 +230,6 @@ PricingResult CUDAHestonPricer::price(const HestonParameters& params,
     CUDA_CHECK(cudaEventSynchronize(stop));
 
     float elapsed_ms = 0.0f;
-
     CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, start, stop));
 
     std::vector<double> payoffs(num_paths);

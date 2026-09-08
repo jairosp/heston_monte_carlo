@@ -57,7 +57,7 @@ def main():
         .copy()
     )
 
-    euler_parallel = (
+    euler_gpu = (
         df[(df["Scheme"] == "EulerMaruyama") & (df["Engine"] == "GPU")]
         .sort_values("Paths")
         .copy()
@@ -71,6 +71,12 @@ def main():
 
     qe_parallel = (
         df[(df["Scheme"] == "QE") & (df["Engine"] == "CPU_Parallel")]
+        .sort_values("Paths")
+        .copy()
+    )
+
+    qe_gpu = (
+        df[(df["Scheme"] == "QE") & (df["Engine"] == "GPU")]
         .sort_values("Paths")
         .copy()
     )
@@ -129,8 +135,8 @@ def main():
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    to_plot = [euler, euler_parallel]
-    labels = ["EM", "EM Parallel CPU"]
+    to_plot = [euler, euler_parallel, euler_gpu]
+    labels = ["EM", "EM Parallel CPU", "EM GPU"]
 
 
     for case, lab in zip(to_plot, labels):
@@ -170,8 +176,8 @@ def main():
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    to_plot = [qe, qe_parallel]
-    labels = ["QE", "QE Parallel CPU"]
+    to_plot = [qe, qe_parallel, qe_gpu]
+    labels = ["QE", "QE Parallel CPU", "QE GPU"]
 
 
     for case, lab in zip(to_plot, labels):
