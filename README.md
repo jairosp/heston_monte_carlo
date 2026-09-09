@@ -68,7 +68,6 @@ Parameters: `S0, K, T, r, kappa, theta, xi, v0, rho`.
 
 * **.github/**: GitHub workflows for CI/CD.
 * **benchmarks/**: Benchmarking scripts, reports, plots, and performance comparisons between different pricing engines and numerical schemes.
-* **docs/**: Weekly project logs documenting progress, challenges, milestones, and future goals.
 * **include/**: Header files and project interfaces.
 
   * **core/**: Core types, interfaces, and shared utilities.
