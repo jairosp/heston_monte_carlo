@@ -81,7 +81,7 @@ int main() {
                            NUM_STEPS, paths, metrics});
     }
 
-    // GPU Benchmarking (To be built)
+    // GPU Benchmarking
 #ifdef BUILD_CUDA
     std::unique_ptr<IHestonPricer> gpu_pricer = std::make_unique<CUDAHestonPricer>();
 

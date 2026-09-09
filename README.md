@@ -54,8 +54,6 @@ Parallel CPU engine:
 
 CUDA engine:
 
-**WARNING** This is not yet implemented. 
-
 ```bash
 ./build/heston_sim --gpu
 ```
