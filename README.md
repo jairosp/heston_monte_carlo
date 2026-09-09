@@ -1,99 +1,49 @@
-# Heston Monte Carlo Pricing Engine (C++20/CUDA)
+# Heston Monte Carlo Option Pricer (CPU / CPU-Parallel / GPU)
 
-[![Tests](https://github.com/jairosp/heston_monte_carlo/actions/workflows/tests.yml/badge.svg)](https://github.com/jairosp/heston_monte_carlo/actions/workflows/tests.yml)
-![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
-![OpenMP](https://img.shields.io/badge/OpenMP-Enabled-green)
-![CUDA](https://img.shields.io/badge/CUDA-In%20Progress-orange)
-![Linux](https://img.shields.io/badge/Linux-Tested-success)
-![License](https://img.shields.io/github/license/jairosp/heston_monte_carlo)
+A Monte Carlo pricer for European options under the Heston stochastic
+volatility model, implemented with three execution backends (single-threaded
+CPU, multithreaded CPU, CUDA GPU) and two discretization schemes
+(Euler-Maruyama and the Quadratic-Exponential scheme of Andersen, 2008).
 
-## Overview
-This is my first serious quantitative finance project, combining C++ and CUDA to build a high-performance Monte Carlo pricing engine. The project focuses on pricing European call options under the Heston stochastic volatility model.
+## Why this project
 
-To demonstrate the performance benefits of parallelization, we can compare the execution times of the Euler–Maruyama method with and without CPU parallelization. For the same number of simulated paths, CPU parallelization delivers approximately a 10× speedup.
+Heston is the standard benchmark for stochastic volatility pricing because
+the variance process (CIR) can go negative under naive discretization,
+which makes it a good stress test for both **numerical schemes** and
+**parallel implementations**. This project compares:
 
-![Benchmark](benchmarks/reports/time_vs_paths_em.png)
+- **Discretization bias**: Euler-Maruyama (simple, biased at coarse steps)
+  vs. Quadratic-Exponential (near-unbiased even with large `dt`).
+- **Compute backends**: naive CPU loop vs. multithreaded CPU vs. CUDA GPU,
+  measuring real speedup as a function of path count.
 
-A similar effect can be observed with the Quadratic Exponential (QE) scheme. Although this method involves additional computations and may appear slower at first glance, it is generally more robust and still achieves a consistent ~10× speedup through CPU parallelization.
+## Results at a glance
 
-![Benchmark](benchmarks/reports/time_vs_paths_qe.png)
+Fixed number of paths (1e7)
 
-Both approaches exhibit comparable performance gains from CPU parallelization. The next step is to investigate whether these results can be improved further through GPU acceleration and massive parallelization using CUDA.
+| Engine       | Discretization Model | Time      |
+|--------------|----------------------|-----------|
+| CPU          | EM                   | 17.493192 |
+| Parallel CPU | EM                   | 0.688317  |
+| GPU          | EM                   | 0.050397  |
+| CPU          | QE                   | 18.225789 |
+| Parallel CPU | QE                   | 0.697019  |
+| GPU          | QE                   | 0.130071  |
 
-## Build and Run
+Average speedup
 
-### Requirements
+| Model  |Parallel CPU / CPU | GPU / CPU | GPU / Parallel CPU |
+|--------|------------------:|----------:|-------------------:|
+| EM     | 25.42×            | 347.11×   | 13.66×             |
+| QE     | 26.15×            | 140.12×   | 5.36×              |
+| Average| 25.79×            | 243.62×   | 9.51×              |
 
-- Linux
-- CMake 3.25+
-- C++20 compiler
-- OpenMP
-- Python 3
 
-### Build
+![Speedup vs path count](/benchmarks/reports/time_vs_paths_em.png)
+![Speedup vs path count](/benchmarks/reports/time_vs_paths_qe.png)
+![EM vs QE convergence](/benchmarks/reports/price_vs_paths.png)
 
-```bash
-git clone https://github.com/jairosp/heston_monte_carlo.git
-cd heston_monte_carlo
-
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-```
-
-### Run
-
-```bash
-./build/heston_sim
-```
-
-Parallel CPU engine:
-
-```bash
-./build/heston_sim --parallel
-```
-
-CUDA engine:
-
-```bash
-./build/heston_sim --gpu
-```
-
-Quadratic-Exponential scheme (Euler scheme by default):
-
-```bash
-./build/heston_sim --qe
-```
-
-### Tests
-
-```bash
-ctest --test-dir build --output-on-failure
-```
-
-### Benchmarks
-
-```bash
-cmake --build build --target run_benchmarks
-```
-
-Benchmark results are stored in `benchmarks/benchmarks.csv`, while generated reports are written to `benchmarks/reports/`.
-
-## Continuous Integration
-
-Unit tests are automatically executed through GitHub Actions on every push and pull request. For now, unit tests validate
-- Convergence to price.
-- Financial properties (positive price...)
-- Randon generators and their properties
-All of these across all the variations of engines and schemes.
-
-## Goals
-Create and measure a robust pricing engine parallelizing with CUDA. Taking advantage of the Monte Carlo simulation parallel potential. First I have built an entire library for simulating the Heston Model. At every stage I implement both the Euler Maruyama and the Quadratic Exponential appraoches to compare them.
-
-Current stage: Parallelizing both on CPU (Done!) and GPU (In progress!) in order to make a fair comparison between approaches.
-
-My main goal is to show or dismantle the fact that CUDA Parallelization can bring massive improvements in efficiency and put to practice my recently acquired CUDA/C++ skills in a large scale project.
-
-## Mathematical Model and Foundations
+## Model
 The Heston model is a stochastic volatility model in which both the asset price ($S_t$) and its variance ($v_t$) evolve randomly over time.
 
 $$
@@ -112,7 +62,9 @@ $$
 
 Since no closed-form solution exists for the simulated paths, option prices are estimated using Monte Carlo simulation. The first discretization scheme implemented is Euler–Maruyama (EM), a simple and widely used numerical method for stochastic differential equations. We then implement the Quadratic Exponential (QE) scheme, which is specifically designed for the Heston variance process and generally provides greater stability and accuracy while preserving the positivity of variance.
 
-## Project Structure
+Parameters: `S0, K, T, r, kappa, theta, xi, v0, rho`.
+
+## Architecture
 
 * **.github/**: GitHub workflows for CI/CD.
 * **benchmarks/**: Benchmarking scripts, reports, plots, and performance comparisons between different pricing engines and numerical schemes.
@@ -127,17 +79,65 @@ Since no closed-form solution exists for the simulated paths, option prices are 
 * **src/**: Source code implementation. In addition to the corresponding `.cpp` files, it contains the project entry point (`main.cpp`).
 * **tests/**: Unit and validation tests covering convergence, financial properties, reproducibility, and implementation-specific behavior.
 
+All three backends implement the same interface:
+
+```cpp
+PricingResult price(const HestonParameters& params,
+                     size_t num_paths,
+                     size_t num_steps,
+                     DiscretizationScheme scheme,
+                     unsigned int seed);
+```
+
+so they are drop-in interchangeable in benchmarks and tests.
+
+## Discretization schemes
+
+- **Euler-Maruyama** — full-truncation scheme; variance floored at zero
+  each step. Simple, fast per step, but biased when the Feller condition
+  `2*kappa*theta >= xi^2` is violated (common in calibrated equity params),
+  and the bias grows with coarser `dt`.
+- **Quadratic-Exponential (QE)** — moment-matches the next variance to a
+  squared-Gaussian (low `psi`) or an exponential-with-atom-at-zero (high
+  `psi`) distribution instead of truncating. Near-unbiased even at large
+  `dt`, at the cost of a branch and slightly more RNG draws per step.
 
 ## Validation
 
-* Compare prices against reference implementations and analytical benchmarks when available.
-* Verify key financial properties and no-arbitrage bounds.
-* Test edge cases across a wide range of market and model parameters.
+- Compared against a semi-closed-form Heston price via numerical
+  integration of the characteristic function (Gatheral's "Little
+  Heston Trap" formulation, chosen for numerical stability of the
+  complex logarithm).
+- Checked `xi -> 0` collapses to Black-Scholes.
+- Checked EM converges to the QE/analytical price as `num_steps -> infinity`
+  (see `figures/convergence.png`), confirming the gap between schemes at
+  coarse step counts is the known EM truncation bias, not a defect.
 
-## Performance (CPU vs GPU)
+## Build
 
-* **CPU:** OpenMP parallelization achieves approximately a 10× speedup compared to the sequential implementation.
-* **GPU:** CUDA implementation currently in development. Additional performance gains are expected through massive parallel execution.
+```bash
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_CUDA=ON   # CUDA optional
+cmake --build .
+./heston_sim                                                   # CPU-only tests
+```
+
+Requires: CMake >= 3.18, a C++20 compiler, CUDA Toolkit >= 11.x for the
+GPU backend (tested on compute capability >= 7.0).
+Paramaters can be edited in src/main.cpp.
+
+## Usage
+
+```bash
+./heston_sim --qe --gpu
+```
+Flags are optional, by default Euler-Maruyama scheme and CPU are chosen.
+
+## Benchmark methodology
+
+- Hardware:
+  - CPU: AMD Ryzen Threadripper PRO 3955WX 16-Cores.
+  - GPU: NVIDIA GeForce RTX 3090.
 
 ## Future Work
 
@@ -145,3 +145,7 @@ Since no closed-form solution exists for the simulated paths, option prices are 
 * Add support for other stochastic volatility and local volatility models.
 * Implement variance reduction techniques to improve Monte Carlo efficiency.
 * Further optimize GPU kernels and memory usage.
+
+## License
+
+MIT (or your choice).
