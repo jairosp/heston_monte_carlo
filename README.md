@@ -32,11 +32,11 @@ Fixed number of paths (1e7)
 
 Average speedup
 
-| Model  |Parallel CPU / CPU | GPU / CPU | GPU / Parallel CPU |
-|--------|------------------:|----------:|-------------------:|
-| EM     | 25.42×            | 347.11×   | 13.66×             |
-| QE     | 26.15×            | 140.12×   | 5.36×              |
-| Average| 25.79×            | 243.62×   | 9.51×              |
+| Discretization Model |Parallel CPU / CPU | GPU / CPU | GPU / Parallel CPU |
+|----------------------|------------------:|----------:|-------------------:|
+| EM                   | 25.42×            | 347.11×   | 13.66×             |
+| QE                   | 26.15×            | 140.12×   | 5.36×              |
+| Average              | 25.79×            | 243.62×   | 9.51×              |
 
 
 ![Speedup vs path count](/benchmarks/reports/time_vs_paths_em.png)
@@ -117,7 +117,7 @@ so they are drop-in interchangeable in benchmarks and tests.
 
 ```bash
 mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_CUDA=ON   # CUDA optional
+cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON   # CUDA optional
 cmake --build .
 ./heston_sim                                                   # CPU-only tests
 ```

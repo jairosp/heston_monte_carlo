@@ -152,7 +152,7 @@ def main():
     ax.set_yscale("log")
 
     ax.set_title(
-        "Simulation Time vs Number of Paths"
+        "Simulation Time vs Number of Paths (Euler-Maruyama)"
     )
 
     ax.set_xlabel("Number of Paths")
@@ -193,7 +193,7 @@ def main():
     ax.set_yscale("log")
 
     ax.set_title(
-        "Simulation Time vs Number of Paths"
+        "Simulation Time vs Number of Paths (Quadratic-Exponential)"
     )
 
     ax.set_xlabel("Number of Paths")
